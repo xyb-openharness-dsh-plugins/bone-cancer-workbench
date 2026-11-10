@@ -1,0 +1,17 @@
+{
+  "packageName": "@xyb-community/bone-cancer-workbench",
+  "title": "小骨宝骨癌工作台",
+  "repository": "https://github.com/xyb-openharness-dsh-plugins/bone-cancer-workbench",
+  "description": "骨癌（骨原发恶性肿瘤，含骨肉瘤/骨巨细胞瘤挂靠）患者工作台：影像随访、肢体功能、治疗节点与随访节律整理，仅回顾不解读",
+  "slug": "bone-cancer-workbench",
+  "layoutMode": "business-first",
+  "businessWidth": 0.65,
+  "targetUsers": "骨原发恶性肿瘤患者与照护者（成人/AYA 为主，家长代记场景标注待补）",
+  "scenario": "确诊后跨医院多轮影像与化疗周期随访中，患者与家属需要把片子、化验、手术与化疗节点、功能恢复记录整理在一处",
+  "coreFlow": [
+    "进入后先看档案概要与最近报告",
+    "记录/核对影像检查、化验指标、手术与化疗节点",
+    "在随访节律与一图秀里回顾趋势并和医生讨论"
+  ],
+  "completion": "患者在随访前能一次看到最近影像/化验、当前治疗节点与下次随访要点（医生原话口径，不做判定）"
+}

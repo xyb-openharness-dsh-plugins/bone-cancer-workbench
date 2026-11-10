@@ -1,0 +1,6 @@
+- insert:
+    - id: bone-cancer-workbench-main
+      name: "@xyb-community/bone-cancer-workbench"
+      # 接线前置：宿主把业务资料根目录指向 dshHomePath('bone-cancer')
+      config:
+        root: !!js dshHomePath('bone-cancer')

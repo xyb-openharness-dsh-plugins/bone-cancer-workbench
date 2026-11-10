@@ -107,9 +107,15 @@ test('④ Panel 自绘 header + 业务 iframe + 会话 aside + splitter（不是
   const spec = loadClient();
   const mod = spec.factory(() => React);
   let Panel = null;
+  let currentSessionId = null; // 先测无会话态，再切到有会话态
   mod.apply({
     effect(fn) { return fn(); },
-    desktopWorkbenches: { register(meta, P) { Panel = P; } },
+    desktopWorkbenches: {
+      register(meta, P) { Panel = P; },
+      // 会话归属按 2026-11-11 用户口径走服务：currentSession/ownsSession（不用 conversation prop 判定）
+      currentSession: () => currentSessionId,
+      ownsSession: (id) => id !== null && id === currentSessionId,
+    },
   });
 
   /* 无会话态：也能渲染，且首个子元素必须是 <header>（宿主为 macOS 窗口按钮留了避让变量） */
@@ -136,7 +142,9 @@ test('④ Panel 自绘 header + 业务 iframe + 会话 aside + splitter（不是
   assert.equal(aside.props.style.display, 'none');
   assert.match(JSON.stringify(aside.children), /AI 对话还没开始/);
 
-  /* 有会话时：aside 显示，并出现可拖 splitter（role=separator + aria-valuenow） */
+  /* 有会话时：aside 显示，并出现可拖 splitter（role=separator + aria-valuenow）。
+     会话来自归属服务（currentSessionId），conversation prop 只是宿主传来的原生节点。 */
+  currentSessionId = 'session-1';
   const live = Panel({ conversation: { tag: 'div', props: {}, children: ['native'] } });
   const liveBody = live.children[1];
   const liveAside = liveBody.children.find((c) => c && c.tag === 'aside');
@@ -150,4 +158,17 @@ test('④ Panel 自绘 header + 业务 iframe + 会话 aside + splitter（不是
   assert.equal(splitter.props['aria-valuemax'], 45);
   assert.equal(splitter.props['aria-valuenow'], 35);
   assert.equal(splitter.props.tabIndex, 0, 'splitter 必须可聚焦，键盘才调得了');
+});
+
+test('⑤ 会话创建契约：走 newSession/defaultWorkspace，不出现 ensureSession（2026-11-11 用户口径）', () => {
+  const src = readFileSync(new URL('../src/client.js', import.meta.url), 'utf8');
+  assert.match(src, /service\.newSession\(/, '创建会话必须调 service.newSession(workspaceId)');
+  assert.match(src, /defaultWorkspace\?\.\(\)\??\.workspaceId/, '默认工作区必须经 service.defaultWorkspace?.()?.workspaceId 获取');
+  assert.doesNotMatch(src, /ensureSession/, '不得再调 ensureSession({})（customFrame 下 conversation prop 不可用于判定）');
+  assert.match(src, /Boolean\(activeSession\)/, '会话存在判定必须来自归属服务（ownedSession），不是 Boolean(conversation)');
+  assert.match(src, /setSessionRevision/, '必须订阅会话变化并触发重渲染');
+  /* 草稿红线：只填入不自动发送，且不携带本机资料目录路径（34 号 §三） */
+  assert.match(src, /setDraft\(/, '草稿经 setDraft 填入');
+  assert.doesNotMatch(src, /submit\?\.\(/, '壳层不得自动发送');
+  assert.equal(/资料目录：\$\{/.test(src), false, '开场白不得携带本机资料目录路径（含用户名）');
 });

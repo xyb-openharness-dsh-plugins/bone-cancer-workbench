@@ -4,10 +4,10 @@
 
 ## M7 发布(草稿)
 
-- tag:`v0.2.0`(指向 commit:晨审时以当时 HEAD 为准,执行 `git tag v0.2.0 <sha> && git push origin v0.2.0`)
-- release:标题「小骨宝 OsteoPal v0.2.0(骨癌工作台)」
-- 附件:`xyb-community-bone-cancer-workbench-0.2.0.tgz`(本目录)+ `SHA256SUMS.txt`
-  - tgz sha256:`bd6b528cbc1ba8f366e480fbf7a539091174fcd66e613f2508e5361ab419f6df`
+- tag:`v0.2.1`(指向 commit:晨审时以当时 HEAD 为准,执行 `git tag v0.2.0 <sha> && git push origin v0.2.0`)
+- release:标题「小骨宝 OsteoPal v0.2.1(骨癌工作台;含会话创建契约修订)」
+- 附件:`xyb-community-bone-cancer-workbench-0.2.1.tgz`(本目录)+ `SHA256SUMS.txt`
+  - tgz sha256:`feab4f1d56358754895188f41101dce529d0568352d298578358bcc1ee85ae6e`
 - CHANGELOG 发版段:已写入仓库 CHANGELOG.md 0.2.0 段(M7 授权后随 tag 一起生效)
 - 未验证项照抄:MinerU 未接入(接口契约验失败路径);真机界面走查待人工;dshHomePath 服务端读取待核
 

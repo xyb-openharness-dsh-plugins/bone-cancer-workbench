@@ -1,6 +1,6 @@
 {
   "name": "@xyb-community/bone-cancer-workbench",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "本机优先的骨癌影像随访、肢体功能自评、手术与化疗周期、随访节律整理工作台，仅回顾不解读",
   "private": true,
   "type": "module",

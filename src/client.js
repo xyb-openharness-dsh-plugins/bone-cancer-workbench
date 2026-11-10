@@ -27,7 +27,11 @@
  *    content ... does not remount its input tree"，卸载会丢掉输入框状态；
  * 3. 无会话时业务面板照常可用（§6），依赖会话的操作在按钮处引导，不阻断业务。
  *
- * 会话集成沿用家族做法：`desktopWorkbenches.ensureSession({ folder })` 调起原生会话；
+ * 会话集成（2026-11-11 用户口径）：点「AI 对话」先按归属服务判断本工作台是否有活动会话
+ * （不用 Boolean(conversation)——customFrame 下宿主没有会话也会传隐藏容器）；
+ * 无会话走 `service.newSession(workspaceId)`（默认工作区取 `service.defaultWorkspace?.()?.workspaceId`，
+ * 没有可用工作区时让宿主按其流程提示选目录），有会话只开/收面板不重复创建；
+ * 订阅会话变化触发重渲染；草稿只填入、不自动发送。
  * 开场白经 `sessions.scope(id).get('conversation').input` 填进**原生草稿**，不自动发送；
  * 拿不到宿主服务一律降级提示，不猜第二个入口。
  */
@@ -235,13 +239,12 @@
         }
       }
 
-      function onboardingPrompt(dir) {
+      function onboardingPrompt() {
         return [
-          '你正在协助我使用「小骨宝 OsteoPal 骨癌工作台」。它只做本机资料整理，不提供诊疗建议。',
-          `资料目录：${dir || '（首次打开时在面板里选择）'}`,
-          '里面是我的检查报告、FIGO 分期与病理、治疗安排、随访与并发症记录、就诊问题清单。',
-          '分工：你帮我汇总、找缺漏、把报告里的指标和日期整理成对照表；判断和决定由我和治疗团队做。',
-          '我标记的"看法"是我自己的担心或判断，不是医生结论。',
+          '你正在协助我使用「小骨宝 OsteoPal 骨癌工作台」。它只做本机资料整理，不提供诊疗建议，不做病情判定。',
+          '里面是我自己记录的影像检查与报告、穿刺/手术病理、化疗周期、功能自评与随访节律、就诊问题清单。',
+          '分工：你帮我汇总已记录的内容、找缺漏、把指标和日期整理成对照表；判断和决定由我和治疗团队做。',
+          '没有记录的项请写"没有"，不要补写或推测；标了私密的内容不要复述。',
         ].join('\n')
       }
 
@@ -257,14 +260,20 @@
         const [narrow, setNarrow] = React.useState(false)
         const [dragging, setDragging] = React.useState(false)
         const [hovering, setHovering] = React.useState(false)
+        const [sessionRevision, setSessionRevision] = React.useState(0)
+        const creatingRef = React.useRef(false)
 
         const brokenTimer = React.useRef(null)
         const shellRef = React.useRef(null)
         const dragHostRef = React.useRef(null)
         const frameRef = React.useRef(null)
 
-        const hasConversation = Boolean(conversation)
-        const canOpenSession = typeof bridge?.desktopWorkbenches?.ensureSession === 'function'
+        // customFrame 下宿主即使没有会话也会传入一个隐藏的 conversation 容器，
+        // 所以「有没有会话」必须问归属服务（ownedSession），不能用 prop 是否为真值。
+        const service = bridge?.desktopWorkbenches
+        const activeSession = ownedSession() // eslint-disable-line react-hooks/exhaustive-deps -- sessionRevision 变化时随重渲染重新求值
+        const hasConversation = Boolean(activeSession)
+        const canOpenSession = typeof service?.newSession === 'function'
 
         // 8 秒内没有 onLoad 就当作没起来：宁可给一个能重试的提示，也不留一块白板。
         // onLoad 成功后必须清掉这个定时器——否则页面加载完 8 秒后整个面板被换成兜底页。
@@ -277,7 +286,11 @@
         // 挂载后开始消化未送达的开场白（composer 就绪一轮一次），并订阅会话变化。
         React.useEffect(() => {
           const timer = setInterval(() => { if (flushDraft()) setNote('草稿已填入会话，按回车发送') }, 500)
-          const unsubscribe = bridge?.desktopWorkbenches?.subscribe?.(() => setNote(''))
+          // 会话新建/切换/归属变化 → bump revision 触发本组件重渲染，面板与按钮文案跟着换
+          const unsubscribe = service?.subscribe?.(() => {
+            setSessionRevision((revision) => revision + 1)
+            setNote('')
+          })
           return () => { clearInterval(timer); unsubscribe?.() }
         }, [])
 
@@ -345,24 +358,44 @@
         async function openAgent(prompt = null) {
           setNote('')
           if (!canOpenSession) {
-            setNote('当前 Desktop 版本不支持从面板调起会话；请从左侧会话列表新建会话')
+            setNote('当前 Desktop 版本不支持从面板创建会话；请从左侧会话列表新建会话')
             return
           }
+          // 已有归属会话：只展开面板，不重复创建（收起再点回同一会话）
+          const existing = ownedSession()
+          if (existing) {
+            setPaneOpen(true)
+            if (prompt) {
+              rememberDraft({ sessionId: existing, prompt })
+              setNote(flushDraft() ? '已填入会话草稿，按回车发送' : '会话输入框还没就绪；内容已暂存')
+            }
+            return
+          }
+          // 快速连点或业务页连发消息时，不能并发创建出两条会话
+          if (creatingRef.current) return
+          creatingRef.current = true
           setConnecting(true)
           try {
-            let dir = null
-            try {
-              const res = await fetch(`${API_PREFIX}/health`)
-              dir = (await res.json())?.dir || null
-            } catch { /* 拿不到目录也照样调起 */ }
-            const id = await bridge.desktopWorkbenches.ensureSession({ folder: dir })
-            rememberDraft({ sessionId: id, prompt: prompt || onboardingPrompt(dir) })
-            flushDraft()
+            // 优先复用当前默认工作区；没有可用工作区时 newSession(undefined)，
+            // 由宿主按其流程提示选择目录（取消或失败都不留空会话，见下）。
+            let workspaceId
+            try { workspaceId = service.defaultWorkspace?.()?.workspaceId } catch { workspaceId = undefined }
+            const id = await service.newSession(workspaceId)
+            if (!id) {
+              // 用户取消目录选择：没有创建会话，提示重试路径
+              setNote('已取消资料目录选择，没有创建会话。可以再次点击「AI 对话」重试。')
+              return
+            }
             setPaneOpen(true)
-            setNote('会话已就绪：草稿已填入右侧输入框，按回车发送')
+            rememberDraft({ sessionId: id, prompt: prompt || onboardingPrompt() })
+            setNote(flushDraft()
+              ? '会话已就绪：草稿已填入右侧输入框，按回车发送'
+              : '会话已就绪；输入框就绪后草稿会自动填入')
           } catch (error) {
-            setNote(`没能调起会话：${error?.message ?? error}`)
+            // 创建失败要在工作台里看见原因，不能点击后无反馈
+            setNote(`没能创建会话：${error?.message ?? error}。可以再次点击「AI 对话」重试。`)
           } finally {
+            creatingRef.current = false
             setConnecting(false)
           }
         }
@@ -387,7 +420,6 @@
               : '会话输入框还没就绪；草稿已暂存，就绪后自动填入')
             return
           }
-          setNote('正在为你调起 AI 会话…')
           await openAgent(prompt)
         }
 
@@ -398,7 +430,7 @@
         React.useEffect(() => {
           function onMessage(event) {
             const data = event.data
-            if (!data || typeof data !== 'object' || data.type !== 'cervi:agent-draft') return
+            if (!data || typeof data !== 'object' || data.type !== 'bone:agent-draft') return
             const frame = frameRef.current
             // 不认"谁都能发"的消息：必须来自我们自己的 iframe，且同源。
             if (!frame || event.source !== frame.contentWindow) return
@@ -424,7 +456,7 @@
 
         return h('div', { style: rootStyle },
           h('header', { style: headerStyle },
-            h('span', { style: brandStyle }, `🪷 ${TITLE}`),
+            h('span', { style: brandStyle }, `🦴 ${TITLE}`),
             h('span', { style: verStyle }, `v${VERSION}`),
             h('span', { style: hintStyle },
               hasConversation
@@ -505,7 +537,7 @@
         ctx.effect(() => ctx.desktopWorkbenches.register({
           title: TITLE,
           panelTitle: PANEL_TITLE,
-          icon: '🪷',
+          icon: '🦴',
           repository: '__REPOSITORY__',
           description: DESCRIPTION,
           audience: '骨癌患者与照护者',

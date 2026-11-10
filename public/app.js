@@ -14,7 +14,7 @@
    5. 指标主线换骨癌口径：ALP / LDH / 血钙 + 血象 + 功能自评；SCC-Ag / CEA / HPV 语义禁止回流。 */
 
 const APP_INFO = {
-  version: '0.2.0',
+  version: '0.2.1',
   build: '2026-11-11',
   channel: 'prototype',
   channelLabel: '交互原型 · 未接入 DSH'

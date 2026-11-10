@@ -1,0 +1,290 @@
+{
+ "screenshots": 56,
+ "errors": [],
+ "assertions": {
+  "name_A": "林远的资料",
+  "name_B": "韩志强的资料"
+ },
+ "routeResults": [
+  {
+   "profile": "A",
+   "route": "dashboard",
+   "mainLen": 8828
+  },
+  {
+   "profile": "A",
+   "route": "records",
+   "mainLen": 1926
+  },
+  {
+   "profile": "A",
+   "route": "records/1",
+   "mainLen": 1220
+  },
+  {
+   "profile": "A",
+   "route": "records/2",
+   "mainLen": 1469
+  },
+  {
+   "profile": "A",
+   "route": "records/3",
+   "mainLen": 1371
+  },
+  {
+   "profile": "A",
+   "route": "records/4",
+   "mainLen": 913
+  },
+  {
+   "profile": "A",
+   "route": "imaging",
+   "mainLen": 2221
+  },
+  {
+   "profile": "A",
+   "route": "imaging/1",
+   "mainLen": 1881
+  },
+  {
+   "profile": "A",
+   "route": "imaging/2",
+   "mainLen": 955
+  },
+  {
+   "profile": "A",
+   "route": "stage",
+   "mainLen": 1959
+  },
+  {
+   "profile": "A",
+   "route": "stage/1",
+   "mainLen": 1772
+  },
+  {
+   "profile": "A",
+   "route": "stage/2",
+   "mainLen": 1189
+  },
+  {
+   "profile": "A",
+   "route": "treatment",
+   "mainLen": 1311
+  },
+  {
+   "profile": "A",
+   "route": "treatment/1",
+   "mainLen": 725
+  },
+  {
+   "profile": "A",
+   "route": "treatment/2",
+   "mainLen": 730
+  },
+  {
+   "profile": "A",
+   "route": "function",
+   "mainLen": 1546
+  },
+  {
+   "profile": "A",
+   "route": "function/1",
+   "mainLen": 501
+  },
+  {
+   "profile": "A",
+   "route": "function/2",
+   "mainLen": 1563
+  },
+  {
+   "profile": "A",
+   "route": "function/3",
+   "mainLen": 1063
+  },
+  {
+   "profile": "A",
+   "route": "labs",
+   "mainLen": 8960
+  },
+  {
+   "profile": "A",
+   "route": "labs/1",
+   "mainLen": 1404
+  },
+  {
+   "profile": "A",
+   "route": "labs/2",
+   "mainLen": 911
+  },
+  {
+   "profile": "A",
+   "route": "timeline",
+   "mainLen": 5734
+  },
+  {
+   "profile": "A",
+   "route": "timeline/1",
+   "mainLen": 5734
+  },
+  {
+   "profile": "A",
+   "route": "timeline/2",
+   "mainLen": 1037
+  },
+  {
+   "profile": "A",
+   "route": "trials",
+   "mainLen": 5653
+  },
+  {
+   "profile": "A",
+   "route": "trials/1",
+   "mainLen": 396
+  },
+  {
+   "profile": "A",
+   "route": "trials/2",
+   "mainLen": 1094
+  },
+  {
+   "profile": "B",
+   "route": "dashboard",
+   "mainLen": 13449
+  },
+  {
+   "profile": "B",
+   "route": "records",
+   "mainLen": 2924
+  },
+  {
+   "profile": "B",
+   "route": "records/1",
+   "mainLen": 1219
+  },
+  {
+   "profile": "B",
+   "route": "records/2",
+   "mainLen": 1853
+  },
+  {
+   "profile": "B",
+   "route": "records/3",
+   "mainLen": 1785
+  },
+  {
+   "profile": "B",
+   "route": "records/4",
+   "mainLen": 973
+  },
+  {
+   "profile": "B",
+   "route": "imaging",
+   "mainLen": 2728
+  },
+  {
+   "profile": "B",
+   "route": "imaging/1",
+   "mainLen": 2879
+  },
+  {
+   "profile": "B",
+   "route": "imaging/2",
+   "mainLen": 1659
+  },
+  {
+   "profile": "B",
+   "route": "stage",
+   "mainLen": 1973
+  },
+  {
+   "profile": "B",
+   "route": "stage/1",
+   "mainLen": 1884
+  },
+  {
+   "profile": "B",
+   "route": "stage/2",
+   "mainLen": 1176
+  },
+  {
+   "profile": "B",
+   "route": "treatment",
+   "mainLen": 2591
+  },
+  {
+   "profile": "B",
+   "route": "treatment/1",
+   "mainLen": 952
+  },
+  {
+   "profile": "B",
+   "route": "treatment/2",
+   "mainLen": 1617
+  },
+  {
+   "profile": "B",
+   "route": "function",
+   "mainLen": 2139
+  },
+  {
+   "profile": "B",
+   "route": "function/1",
+   "mainLen": 1065
+  },
+  {
+   "profile": "B",
+   "route": "function/2",
+   "mainLen": 1964
+  },
+  {
+   "profile": "B",
+   "route": "function/3",
+   "mainLen": 1063
+  },
+  {
+   "profile": "B",
+   "route": "labs",
+   "mainLen": 33306
+  },
+  {
+   "profile": "B",
+   "route": "labs/1",
+   "mainLen": 2157
+  },
+  {
+   "profile": "B",
+   "route": "labs/2",
+   "mainLen": 911
+  },
+  {
+   "profile": "B",
+   "route": "timeline",
+   "mainLen": 15939
+  },
+  {
+   "profile": "B",
+   "route": "timeline/1",
+   "mainLen": 15939
+  },
+  {
+   "profile": "B",
+   "route": "timeline/2",
+   "mainLen": 1037
+  },
+  {
+   "profile": "B",
+   "route": "trials",
+   "mainLen": 5653
+  },
+  {
+   "profile": "B",
+   "route": "trials/1",
+   "mainLen": 396
+  },
+  {
+   "profile": "B",
+   "route": "trials/2",
+   "mainLen": 1094
+  }
+ ]
+}

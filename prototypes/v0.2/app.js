@@ -110,6 +110,27 @@ for (const [k, p] of Object.entries(D.profiles)) {
 }
 const TRIALS = D.trials;
 
+/* ---------------- 路由表（check-probe-coverage / probe-m2 用） ----------------
+   键 = hash 叶子路由（view 或 view:N，N 为页内 Tab 序号）；值 = [view, subIndex]。
+   28 条叶子必须与 SUBPAGES 一一对应；改名漏页必红。 */
+var ROUTES = [
+  'dashboard',
+  'records', 'records/1', 'records/2', 'records/3', 'records/4',
+  'imaging', 'imaging/1', 'imaging/2',
+  'stage', 'stage/1', 'stage/2',
+  'treatment', 'treatment/1', 'treatment/2',
+  'function', 'function/1', 'function/2', 'function/3',
+  'labs', 'labs/1', 'labs/2',
+  'timeline', 'timeline/1', 'timeline/2',
+  'trials', 'trials/1', 'trials/2'
+];
+function parseHashRoute(h) {
+  if (!ROUTES.includes(h)) return null;
+  const m = /^([a-z]+)(?:\/(\d))?$/.exec(h || '');
+  if (!m || !VIEWS[m[1]]) return null;
+  return { view: m[1], sub: Number(m[2] || 0) };
+}
+
 /* ---------------- state ---------------- */
 /* 一图秀默认：ALP + 疼痛自评两条数值线 + 行走情况分类节点（不连线）。
    进页面先看"骨相关化验和功能怎么样"，而不是血象。 */
@@ -1294,7 +1315,12 @@ document.addEventListener('keydown', (e) => {
   if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); flipCard(card.dataset.mcard); }
 });
 $('#font-toggle').addEventListener('click', () => { const on = document.body.classList.toggle('large'); $('#font-toggle').setAttribute('aria-pressed', String(on)); });
-window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (v && v !== state.view && VIEWS[v]) { state.view = v; state.privateOpen = false; state.pin = null; render(); } });
+window.addEventListener('hashchange', () => {
+  const r = parseHashRoute(location.hash.slice(1));
+  if (r && (r.view !== state.view || r.sub !== (state.sub[r.view] || 0))) {
+    state.view = r.view; state.sub[r.view] = r.sub; state.privateOpen = false; state.pin = null; render();
+  }
+});
 
 /* 上传：原型只做本地"接住"动作，不解析、不上传、不写库 */
 function ingestFiles(list) {
@@ -1314,8 +1340,10 @@ function ingestFiles(list) {
   toast(`已接住 ${ok.length} 份文件（演示）：原件保留在资料目录，解析结果会先进候选`);
 }
 
-const initialHash = location.hash.slice(1);
-if (VIEWS[initialHash]) state.view = initialHash;
+{
+  const r0 = parseHashRoute(location.hash.slice(1));
+  if (r0) { state.view = r0.view; state.sub[r0.view] = r0.sub; }
+}
 render();
 
 

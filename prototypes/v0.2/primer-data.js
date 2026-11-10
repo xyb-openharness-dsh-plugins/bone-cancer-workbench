@@ -42,10 +42,10 @@ window.DISEASE_PRIMER = {
       table: {
         head: ['机构', '文件', '版本 / 年份', '原件', '本台的用途'],
         rows: [
-          ['国家卫健委', '《86 个罕见病病种诊疗指南（2025 年版）》骨肉瘤 / 尤文肉瘤 / 骨巨细胞瘤分册', '2025 年版', { text: '未取得原件，据官网目录页', url: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml' }, '中文定义、确诊路径（穿刺活检为先）与随访口径的对照'],
-          ['CSCO', 'CSCO 骨与软组织肿瘤诊疗指南', '2025（官网直链未核实）', { text: '未取得原件，据二次发布报道', url: 'https://bydrug.pharmcube.com/news/detail/80bc7aa819ee2ab3192d5099a40de05d' }, '国内路径与药物可及性对照；本版不作引用依据'],
-          ['NCCN', 'NCCN Guidelines · Bone Cancer', '2.2025（现行版本号未核实）', { text: '未取得原件，据 JNCCN 文献', url: 'https://pubmed.ncbi.nlm.nih.gov/40203873' }, '国际路径结构对照；本版不作引用依据'],
-          ['AJCC', 'AJCC Cancer Staging Manual Version 9（骨肿瘤章节滚动更新）', 'v9', { text: '未取得章节原文，据官网页', url: 'https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/version-9' }, '分期体系命名口径']
+          ['国家卫健委', '《86 个罕见病病种诊疗指南（2025 年版）》骨肉瘤 / 尤文肉瘤 / 骨巨细胞瘤分册', '2025 年版', { text: '未取得原件，据官网目录页', kind: 'hub', url: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml', note: '官网目录页（需自行下载单病种 PDF 原件）；目录页不等于全文' }, '中文定义、确诊路径（穿刺活检为先）与随访口径的对照'],
+          ['CSCO', 'CSCO 骨与软组织肿瘤诊疗指南', '2025（官网直链未核实）', { nolink: true, note: '官网直链未核实；据二次发布报道（bydrug.pharmcube.com，二次来源），全文未取得' }, '国内路径与药物可及性对照；本版不作引用依据'],
+          ['NCCN', 'NCCN Guidelines · Bone Cancer', '2.2025（现行版本号未核实）', { nolink: true, note: '全文未取得；2.2025 存在性据 JNCCN 2025;13(4):e250017（PubMed 40203873），现行版本号未核实' }, '国际路径结构对照；本版不作引用依据'],
+          ['AJCC', 'AJCC Cancer Staging Manual Version 9（骨肿瘤章节滚动更新）', 'v9', { text: '未取得章节原文，据官网版本页', kind: 'hub', url: 'https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/version-9', note: '官网版本页；骨肿瘤章节滚动更新中，需自行核对章节原文' }, '分期体系命名口径']
         ]
       },
       points: [

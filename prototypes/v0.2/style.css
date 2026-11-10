@@ -2,7 +2,7 @@
   /* 品牌色系沿用家族的骨架，只换品牌变量：
      小骨宝暖赭 --violet:#C07A3E（骨色意象）。
      --violet-deep 压深到 #8F5A26 保证纸底上正文对比度 ≥ 4.5:1。
-     外壳中性色（paper/ink/line）与 cervical 底本一致，换色成本 = 改这 3 行。 */
+     外壳中性色（paper/ink/line）与 cervical 底本一致，换色成本 = 改这 3 行。(leftover-allow:底本声明) */
   --paper:#f7f9fc; --surface:#fff;
   --ink:#1c2b3a; --ink-2:#47586c; --muted:#6c7c8e;
   --line:#e2e9f1; --line-strong:#c9d6e4;

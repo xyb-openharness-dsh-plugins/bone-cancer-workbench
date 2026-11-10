@@ -19,7 +19,7 @@ const ok = (m) => console.log('ok   ' + m);
 const sql = readFileSync(join(ROOT, 'schema/0001_initial.sql'), 'utf8');
 const sha = createHash('sha256').update(sql).digest('hex');
 const fc = readFileSync(join(ROOT, 'schema/freeze-contract.md'), 'utf8');
-const mSha = /sha256[:：]`([0-9a-f]{64})`/.exec(fc);
+const mSha = /sha256[:：]`([0-9a-f]{64})`/.exec(fc) || /\|\s*`?0001_initial\.sql`?\s*\|\s*([0-9a-f]{64})/.exec(fc);
 if (!mSha) fail('freeze-contract.md 里找不到 sha256 记录');
 else if (mSha[1] === sha) ok(`freeze-contract sha256 一致（${sha.slice(0, 12)}…）`);
 else fail(`freeze-contract sha256 不一致：合同 ${mSha[1].slice(0, 12)}… vs 实际 ${sha.slice(0, 12)}…（改 0001 必须同步合同）`);

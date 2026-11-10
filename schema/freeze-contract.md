@@ -1,7 +1,11 @@
 # freeze-contract · bone-cancer-workbench
 
-- 冻结对象:`schema/0001_initial.sql`
-- sha256:`f920705d82f4ffafdd1ae2d261160550523a8924923cff0ad6b97bfef1ee485f`
+- 冻结对象:`schema/0001_initial.sql`(下表为机器可读行,check-schema.mjs 逐行核验)
+
+| 迁移文件 | sha256 | 说明 | 冻结日期 |
+| --- | --- | --- | --- |
+| `0001_initial.sql` | 9f180c11c436777b1005e3d8259d5094d52d8cd901b417e3be3d4eb116bebec5 | 初始 23 表（档案 3/指标 2/通用 10/骨癌专属 9/导入 2+meta）| 2026-11-11 M3 |
+
 - 冻结时间:2026-11-11(无人值守夜班,M3)
 - 冻结 commit:见 git log(本文件所在 commit)
 
@@ -18,5 +22,5 @@
 
 ## 附注
 
-- 24 张表:档案级(subjects/section_titles/profile_meta)3、指标(metrics/metric_points)2、通用(events/rhythm/cycles/treatment_lines/documents/candidate_fields/viewpoints/molecular/trials/demo_meta)10、骨癌专属(stage_rows/pathology_rows/pathway_rows/surgery_rows/imaging_rows/funct_self_rows/prosthesis_rows/help_rows)9。
+- 23 张表:档案级(subjects/section_titles/profile_meta)3、指标(metrics/metric_points)2、通用(events/rhythm/cycles/treatment_lines/documents/candidate_fields/viewpoints/molecular/trials/demo_meta)10、骨癌专属(stage_rows/pathology_rows/pathway_rows/surgery_rows/imaging_rows/funct_self_rows/prosthesis_rows/help_rows)9。
 - 导入三件:documents(原件)+ candidate_fields(候选)+ metric_points(核对后入库),对应「上传 → 解析 → 确认指标 → 入库」链路。

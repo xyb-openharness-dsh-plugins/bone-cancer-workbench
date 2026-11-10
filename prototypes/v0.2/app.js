@@ -1,14 +1,14 @@
 'use strict';
 /* 小骨宝 OsteoPal v0.1.0 — 交互原型。患者数据全部为模拟；临床试验列表为真实登记摘录（状态未核实）。
-   不读写真实文件、不调用模型或宿主 API。视觉与交互结构移植自家族原型（cervical-workbench v0.2，
+   不读写真实文件、不调用模型或宿主 API。视觉与交互结构移植自家族原型（cervical-workbench v0.2,leftover-allow:底本声明，
    最近过 V1 的同形仓），病种语义全部重写为骨癌口径；品牌色重映射为小骨宝暖赭 #C07A3E
    （--violet-deep 压深到 #8F5A26 保证正文对比度 ≥ 4.5:1）。
 
-   与 cervical 底本的结构差异（改前先看，两边不许互相抄）：
+   与 cervical 底本的结构差异（改前先看，两边不许互相抄）(leftover-allow:移植来源声明)
    1. 一级页 9 个：看板 / 资料库 / 影像随访 / 分期与评估 / 治疗历程 / 功能与随访 / 检查与指标
-      / 病情一图秀 / 临床研究（cervical 的性与生育、放疗与长期影响、营养支持、心理支持不适用，已裁剪）；
+      / 病情一图秀 / 临床研究（cervical 的性与生育(leftover-allow:裁剪说明)、放疗与长期影响、营养支持、心理支持不适用，已裁剪）；
    2. 新增专属一级页「影像随访」（骨癌随访以影像为核心）与「功能与随访」
-      （功能自评 + 假体与重建随访 + 随访节律 + 私密感受，吸收 cervical mind/review 语义）；
+      （功能自评 + 假体与重建随访 + 随访节律 + 私密感受，吸收 cervical mind/review 语义）(leftover-allow:来源声明)；
    3. 一图秀默认是 ALP + 疼痛自评两条数值线 + 行走情况分类节点（只画点不连线）；
    4. 功能自评里的私密感受默认折叠，需要本人点开才显示；
    5. 指标主线换骨癌口径：ALP / LDH / 血钙 + 血象 + 功能自评；SCC-Ag / CEA / HPV 语义禁止回流。 */
@@ -85,7 +85,7 @@ const PROFILES = {}, METRICS = {}, EVENTS = {}, DASH_KEYS = {}, DOCS = {}, CANDS
 for (const [k, p] of Object.entries(D.profiles)) {
   /* 字段逐条显式列出：生成器加字段时这里会同步补，不会静默丢字段。
      骨癌专属：biopsyNote / staging / imaging / functSelf / prosthesis / helpPlan。
-     cervical 的 figo / rt / lateEffects / lymphedema / vagina / menopause / hormone /
+     cervical 的 figo / rt / lateEffects / lymphedema / vagina / menopause / hormone /(leftover-allow:禁抄清单)
      fertility / sexual / cytology / hpv / screening / nutrition 不许抄回来。 */
   PROFILES[k] = {
     name: p.name, sex: p.sex, age: p.age, meta: p.meta, headline: p.headline, stage: p.stage,

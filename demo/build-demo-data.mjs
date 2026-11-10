@@ -416,7 +416,7 @@ function writeSqlite() {
   db.exec(`
 /* 这张表的结构必须与 schema/0001_initial.sql 逐列一致（check-demo-columns 比对）。
    改动顺序：先改 schema/0001_*.sql（或新增 0002），再改这里。
-   骨癌裁剪：宫颈族的 rt / fertility / menopause / cytology / hpv / nutrition / screening 系列不建表；
+   骨癌裁剪：宫颈族的 rt / fertility / menopause / cytology / hpv / nutrition / screening 系列不建表（leftover-allow:裁剪声明）；
    新增 funct_self_rows（功能自评）、prosthesis_rows（假体与重建随访）、help_rows（医生行动计划原话）。 */
 DROP TABLE IF EXISTS metric_points; DROP TABLE IF EXISTS metrics; DROP TABLE IF EXISTS molecular;
 DROP TABLE IF EXISTS events; DROP TABLE IF EXISTS rhythm; DROP TABLE IF EXISTS cycles;

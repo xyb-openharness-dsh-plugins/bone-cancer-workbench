@@ -75,4 +75,3 @@ CREATE INDEX idx_points  ON metric_points (profile_key, metric_key);
 CREATE INDEX idx_stage   ON stage_rows    (profile_key, ord);
 CREATE INDEX idx_docs    ON documents     (profile_key);
 CREATE INDEX idx_imaging ON imaging_rows  (profile_key, d);
-`);

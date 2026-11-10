@@ -661,7 +661,7 @@ function vStage() {
   }
   return `${pageHead(true)}<div class="grid">
     <div class="card"><div class="card-head"><h2>会诊记录</h2></div><div class="rows">
-      ${row('2026 多学科讨论', state.profile === 'A' ? '穿刺确诊骨肉瘤，先做新辅助化疗，手术方案等化疗反应评估后再定（会诊意见摘录）' : '化疗反应 92%，按计划行保肢手术（会诊意见摘录）')}
+      ${row('2026 多学科讨论', state.profile === 'A' ? '穿刺确诊骨肉瘤，先做新辅助化疗，手术方案等化疗反应评估后再定（会诊意见摘录）' : `化疗反应 ${esc((P().molecular.find(x => x.k.includes('化疗反应')) || { v: '未记录' }).v)}，按计划行保肢手术（会诊意见摘录）`)}
       ${row('二次意见', '尚未做；如需要，把病理切片与影像光盘带上')}
     </div><div class="notice">会诊意见是"一条信息"，最终方案由你和主诊医生定。</div></div>
     <div class="card"><div class="card-head"><h2>想再问的问题</h2></div><div class="rows">
@@ -1091,7 +1091,7 @@ function dlgSettings() {
   <div class="token-row"><input id="mineru-token" type="password" autocomplete="new-password" placeholder="粘贴 MinerU API Token（sk-…）" aria-label="MinerU API Token"><button class="primary" data-action="mineru-save">保存</button><button class="soft" data-action="mineru-clear">清除</button></div>
   <p class="small-note" id="mineru-status" role="status">正在读取本机 Token 状态…</p>
   <p class="small-note">Token 只写进本机密钥文件（权限 600），只用于向 MinerU 发起解析请求，不进患者资料、不进导出、不进提示词。没有 Token 可以到 <a href="https://mineru.net/apiManage/token" target="_blank" rel="noopener">MinerU 申请页 ↗</a> 领取；解析结果永远是候选，核对后才入档。</p></div>
-  <div class="cfg-block" style="margin-top:12px" data-tab="kb" hidden><h3>2026 临床数据库</h3><div class="path-row"><code>bone_cancer_trials_2026.sqlite · 6 条登记（演示摘录 6 条；中国骨肉瘤登记全量 87 项按 M4 采集）</code></div>
+  <div class="cfg-block" style="margin-top:12px" data-tab="kb" hidden><h3>2026 临床数据库</h3><div class="path-row"><code>bone_cancer_trials_2026.sqlite · ${TRIALS.length} 条登记（演示摘录；开发版接入 research/bone-cancer 快照 214 条）</code></div>
   <p class="small-note">离线快照来自 CT.gov 在线通道；ChiCTR / 药物临床试验登记平台本轮未采集，覆盖未知。</p></div>`, '<button class="primary" data-action="close">完成</button>');
 }
 function dlgAbout() {
@@ -1113,7 +1113,7 @@ function dlgExport() {
     `- 外科分期：${p.stage}（医生给出）`,
     ...p.rhythm.map(r => `- ${r[0]}：${r[1]}（${r[2]}）`),
     ...(p.functSelf ? p.functSelf.rows.slice(0, 3).map(r => `- ${r[0]} 功能自评 ${r[1]}：${r[2]}（本人记录）`) : []),
-    '', '## 想问的事 / 我的看法（不是医生结论）', '- （按页面勾选结果导出；私密条目默认不含）', '',
+    '', `## 想问的事 / 我的看法（不是医生结论）`, `- 感受记录 ${p.viewpoints.length} 条中私密 ${p.viewpoints.length} 条，默认不进导出与摘要`, '',
     '> 本文件由工作台整理，不构成医疗建议。'].join('\n');
   openDialog('小骨宝', '导出编辑（Markdown）', `
     <textarea id="export-edit" aria-label="导出内容，可直接编辑" style="width:100%;min-height:320px;font:12px/1.7 ui-monospace,SFMono-Regular,monospace;padding:12px;border:1px solid #d8e0ea;border-radius:10px;background:#fff;color:#213139;resize:vertical">${esc(md)}</textarea>
@@ -1228,7 +1228,7 @@ document.addEventListener('click', (e) => {
       if (state.loaded[state.profile]) { toast('模拟报告已载入，没有重复新增'); return; }
       state.parsing = true; state.parseError = false; render();
       setTimeout(() => {
-        DOCS[state.profile].push({ id: 'dx' + state.profile, name: '复查记录 · 新模拟报告', date: '2026-10-18', type: '其他', status: '待核对' });
+        DOCS[state.profile].push({ id: 'dx' + state.profile, name: '复查记录 · 新模拟报告', date: todayISO(), type: '其他', status: '待核对' });
         CANDS[state.profile].push({ id: 'cx' + state.profile, name: '下次随访安排', value: '2027-01 前后（示例，以医生安排为准）', source: '复查记录 · 新模拟报告 · 第 1 页', status: 'candidate' });
         state.loaded[state.profile] = true; state.parsing = false;
         if (state.view === 'records') render();
@@ -1269,7 +1269,6 @@ document.addEventListener('click', (e) => {
     'add-imaging': () => toast('原型内不落库；真实版在这里记一次影像检查（日期 / 模态 / 部位 / 报告摘录）'),
     'add-function': () => toast('功能自评按本人记录写（日期 / 条目 / 情况），不换算成评分'),
     'add-viewpoint': () => toast('感受会记为"一条信息"，标注不是医生结论'),
-    'export-nutrition': () => toast('就诊展示：最近 10 条进食记录 + 在用补充剂（演示）'),
     'export-review': dlgExport,
     'toggle-ask': (el) => { el.textContent = el.textContent.includes('✓') ? '标记已问' : '已问过 ✓'; },
     'save-trial': (el) => { const id = el.dataset.id; if (state.saved.includes(id)) { state.saved = state.saved.filter(x => x !== id); } else state.saved.push(id); render(); },

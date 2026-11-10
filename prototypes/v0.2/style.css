@@ -1,13 +1,13 @@
 :root{
   /* 品牌色系沿用家族的骨架，只换品牌变量：
-     小莲宝青绿 --violet:#18AFA5（docs/DESIGN-SESSION.md D4：青绿 + 白 + 文字标识）。
-     --violet-deep 压深到 #0E837C 保证纸底上正文对比度 ≥ 4.5:1（#18AFA5 直接做正文只有 2.9:1）。
-     外壳中性色（paper/ink/line）与肠癌完全一致，换色成本 = 改这 3 行。 */
+     小骨宝暖赭 --violet:#C07A3E（骨色意象）。
+     --violet-deep 压深到 #8F5A26 保证纸底上正文对比度 ≥ 4.5:1。
+     外壳中性色（paper/ink/line）与 cervical 底本一致，换色成本 = 改这 3 行。 */
   --paper:#f7f9fc; --surface:#fff;
   --ink:#1c2b3a; --ink-2:#47586c; --muted:#6c7c8e;
   --line:#e2e9f1; --line-strong:#c9d6e4;
-  --violet:#18afa5; --violet-soft:#e6f6f4; --violet-deep:#0e837c;
-  --orange:#18afa5; --orange-soft:#e6f6f4;
+  --violet:#c07a3e; --violet-soft:#f7ede2; --violet-deep:#8f5a26;
+  --orange:#c07a3e; --orange-soft:#f7ede2;
   --teal:#2f6f66; --amber:#9a6410; --plum:#2f6f66;
   --ok:#2f6f66; --warn:#8a5a0c; --warn-bg:#fdf6e8; --danger:#a3241b; --danger-bg:#fdf1ef;
   --radius:14px; --radius-sm:9px;
@@ -45,7 +45,7 @@ small{font-size:12px;color:var(--muted)}
 .sidebar{background:#fff;border-right:1px solid var(--line);padding:22px 16px 18px;display:flex;flex-direction:column;gap:6px}
 .brand{display:flex;gap:10px;align-items:center;padding:0 6px 18px}
 .brand img{width:48px;height:48px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid var(--line);flex:0 0 auto}
-.brand.no-mark::before{content:"咽";display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:var(--violet-soft);color:var(--violet-deep);font-weight:600;font-size:17px;flex:0 0 auto}
+.brand.no-mark::before{content:"骨";display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:var(--violet-soft);color:var(--violet-deep);font-weight:600;font-size:17px;flex:0 0 auto}
 .brand strong{font-size:19px;letter-spacing:1.2px;display:block;line-height:1.2}
 .brand span{display:block;font-size:10.5px;color:var(--muted);letter-spacing:.2px}
 .profile{display:flex;gap:9px;align-items:center;padding:10px;background:var(--violet-soft);border:1px solid #d7e3f0;border-radius:11px;margin-bottom:14px}
@@ -406,7 +406,7 @@ dialog::backdrop{background:rgba(28,43,58,.36);backdrop-filter:blur(2px)}
   .nav-button[aria-current="page"]::before{display:none}
   .nav-button .nav-count{display:none}
   .topbar{padding:11px 16px;position:static;gap:10px;flex-wrap:wrap}
-  .top-actions{gap:6px;flex-wrap:wrap}
+  .top-actions{gap:6px;flex-wrap:wrap;max-width:100%;min-width:0}
   .top-actions .status{padding:3px 8px;min-height:30px;flex:0 0 auto;gap:4px;font-size:10.5px}
   .breadcrumb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #main{padding:20px 16px 36px}
@@ -427,6 +427,7 @@ dialog::backdrop{background:rgba(28,43,58,.36);backdrop-filter:blur(2px)}
 }
 @media(max-width:600px){
   .ver-chip{display:none}
+  .top-actions .status span{display:none}
   .about{flex-direction:column;gap:12px}
   .about-logo{width:110px;height:110px}
   .cycle-table th,.cycle-table td{padding:8px 6px;font-size:11.5px}
@@ -497,3 +498,21 @@ dialog::backdrop{background:rgba(28,43,58,.36);backdrop-filter:blur(2px)}
 .stage-strip .stage-now small{margin-left:0;font-size:11px;color:var(--ink-2);flex:0 1 auto}
 .stage-strip .actions{margin-left:auto;flex:0 1 auto;display:flex;gap:8px;flex-wrap:wrap}
 .stage-strip .actions .soft{white-space:normal;text-align:left}
+
+/* ---------------- 32 号整页视图（A1–A10） ---------------- */
+.pv-overlay{position:fixed;inset:0;background:rgba(28,43,58,.42);z-index:60}
+.pv-overlay[hidden]{display:none}
+.pv-panel{position:absolute;inset:3vh 4vw;background:var(--surface);border-radius:var(--radius);display:flex;flex-direction:column;box-shadow:var(--shadow);animation:pv-in .18s ease-out;min-width:0}
+@keyframes pv-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+html.pv-lock{overflow:hidden}
+.pv-head{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:nowrap}
+.pv-eyebrow{font-size:11px;color:var(--muted);letter-spacing:.5px}
+.pv-title{font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-crumb{background:none;border:none;padding:2px 4px;min-height:0;color:var(--violet-deep);cursor:pointer;text-decoration:underline;min-width:0}
+.pv-crumb:hover{background:var(--violet-soft)}
+.pv-head-actions{margin-left:auto;display:flex;gap:8px;flex:0 0 auto}
+.pv-head-actions button{min-height:40px}
+.pv-body{flex:1;overflow:auto;padding:18px 20px;min-width:0}
+.pv-btn{margin-top:10px}
+@media (prefers-reduced-motion: reduce){.pv-panel{animation:none}}
+@media (max-width:600px){.pv-panel{inset:0;border-radius:0}}

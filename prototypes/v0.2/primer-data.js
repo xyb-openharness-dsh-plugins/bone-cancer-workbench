@@ -1,100 +1,100 @@
-/* 小莲宝 CerviPal · 疾病概要数据（36 号）
+/* 小骨宝 OsteoPal · 疾病概要数据（36 号）
  * 口径：docs/DISEASE-PRIMER.md；规范：starter docs/36-DISEASE-PRIMER.md。
  * 全部内容属第 ② 层（解释）：只写定义、文件、指南列举过的手段、已发生的变化。
  * 任何「你该怎么办」的判断都不在这里，固定出口是「这一句需要问你的医生」。
  *
- * 原件状态照实写：FIGO 2018 分期据项目 SPEC 与 USER-RESEARCH 转引；CSCO / NCCN 宫颈癌指南
- * 全文未核对（docs/USER-RESEARCH.md 原文），版本号不臆测；WHO 分类未取得原件。
- * 2026-10-27（36 号 §2.5）：每条未取得原件的行都补了可点的二次来源；二次来源的性质写在 note/表内文字里，
- * 不把「书目页 / 官网指南页」冒充全文。ClinicalTrials.gov 与国内登记平台的探测是本机快照，无公开 URL，标 nolink。
+ * 原件状态照实写：NCCN Bone Cancer 全文未取得（2.2025 存在见 JNCCN 2025;13(4):e250017，
+ * 现行版本号未核实）；CSCO《骨与软组织肿瘤诊疗指南 2025》官网直链未取得，据二次发布报道；
+ * 卫健委《86 个罕见病病种诊疗指南（2025 年版）》含骨肉瘤 / 尤文肉瘤 / 骨巨细胞瘤单病种指南，
+ * 本表只引用其「存在与覆盖」这一层，不复制临床条文。
+ * CT.gov 检索数字为本项目 2026-11-10 API v2 实测（一手自采）。
  */
 window.DISEASE_PRIMER = {
-  brand: '小莲宝 CerviPal',
-  name: '宫颈癌',
-  en: 'Cervical Cancer',
-  updated: '2026-10-27',
+  brand: '小骨宝 OsteoPal',
+  name: '骨癌（骨原发恶性肿瘤）',
+  en: 'Bone Cancer (Primary Malignant Bone Tumors)',
+  updated: '2026-11-11',
   sections: [
     {
       id: 'definition',
       title: '定义',
-      intro: '宫颈癌是发生在子宫颈上皮的恶性肿瘤。这台工作台把「医生给的是哪一期、凭什么定的」放在第一位，'
-        + '因为宫颈癌的治疗路径先按临床分期分岔：手术，还是根治性放化疗。',
+      intro: '骨原发恶性肿瘤是起源于骨组织的恶性肿瘤，常见类型有骨肉瘤、软骨肉瘤、尤文肉瘤等；'
+        + '骨巨细胞瘤是原发于骨骼的交界性肿瘤（卫健委 2025 年版指南口径）。这台工作台把「医生给的是哪一期、凭什么定的」放在第一位，'
+        + '因为治疗路径先按病理类型与外科分期分岔：先化疗还是先手术、保肢还是截肢。',
       points: [
-        '病理类型常见鳞状细胞癌、腺癌、腺鳞癌三类；本台的病历结构按这三类建档，不合并成「宫颈癌」一个空字段。',
-        '分期用国际妇产科联盟（FIGO）2018 年宫颈癌临床分期，含 IIIC1 / IIIC2 的淋巴结分期，以及 r（影像）与 p（病理）标记。',
-        'FIGO 2018 允许影像与病理参与分期（IIIC r/p）；本台只记录医生给出的期别、依据原文与日期，不自算、不推导。',
-        'HPV 筛查史在档案里单列：筛查史与发病不是因果关系，本台不做归因。'
+        '骨肉瘤是最常见的原发恶性骨肿瘤，好发于青少年与年轻成人的长骨干骺端（如股骨远端、胫骨近端、肱骨近端）。',
+        '确诊靠「临床 + 影像 + 病理」三结合；治疗前必须活检获取组织学诊断，首选穿刺活检（NHC 2025 口径）。',
+        '分期用 Enneking 外科分期（G 分级 / T 范围 / M 转移）；AJCC 第 9 版骨肿瘤章节滚动更新中。本台只记录医生给出的期别，不自算。',
+        '骨转移癌（其他器官的癌转移到骨）不属本台范围。'
       ],
       sources: [
-        { org: 'FIGO', doc: 'FIGO staging for carcinoma of the cervix uteri（2018 修订）', version: '2018', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.cancer.gov/types/cervical/hp/cervical-treatment-pdq', note: '二次来源为 NCI PDQ 宫颈癌治疗（含 FIGO 分期说明）；FIGO 原文需出版方订阅' },
-        { org: 'WHO', doc: 'Classification of Tumours: Female Genital Tumours, 5th ed.', version: '版本未核实', original: false, page: '页码待核',
-          secondaryUrl: 'https://publications.iarc.fr/Book-And-Report-Series/Who-Classification-Of-Tumours/Female-Genital-Tumours-2020', note: 'IARC/WHO 官方书目页；全文需购买' }
+        { org: '国家卫健委', doc: '《86 个罕见病病种诊疗指南（2025 年版）》骨肉瘤 / 尤文肉瘤 / 骨巨细胞瘤分册', version: '2025 年版', original: false, page: '页码待核',
+          secondaryUrl: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml', note: '官网目录页（官方入口）；单病种 PDF 原件未下载，据目录页与转载页' },
+        { org: 'NCCN', doc: 'NCCN Guidelines · Bone Cancer', version: '2.2025（现行版本号未核实）', original: false, page: '页码待核',
+          secondaryUrl: 'https://pubmed.ncbi.nlm.nih.gov/40203873', note: '2.2025 存在性见 JNCCN 2025;13(4):e250017；全文未取得' }
       ]
     },
     {
       id: 'evidence',
       title: '医学资料规范和指南情况',
-      intro: '这台工作台里出现的每一条「该查什么、怎么分期、多久随访」，都应能追到下面某一份文件。'
-        + '本项目对宫颈癌的两份主要临床指南只核对到「存在」这一层，全文未取得，版本号不写死。',
+      intro: '这台工作台里出现的每一条「查什么、分期怎么记、多久随访」，都应能追到下面某一份文件。'
+        + '本项目对主要指南只核对到「存在」这一层，全文未取得，版本号不写死。',
       table: {
         head: ['机构', '文件', '版本 / 年份', '原件', '本台的用途'],
         rows: [
-          ['FIGO', 'FIGO staging for carcinoma of the cervix uteri', '2018 修订', { text: '未取得原件，据 NCI PDQ 二次来源', url: 'https://www.cancer.gov/types/cervical/hp/cervical-treatment-pdq' }, '分期档案的期别结构（含 IIIC1/IIIC2、r/p 标记）'],
-          ['CSCO', 'CSCO 宫颈癌诊疗指南', '版本未核实', { text: '未取得原件，据出版方书目页', url: 'https://www.pmphmall.com/gdsdetail/660506-338835' }, '国内治疗路径与药物可及性的对照；本版不作引用依据'],
-          ['NCCN', 'NCCN Guidelines · Cervical Cancer', '版本未核实', { text: '未取得原件，据 NCCN 官网指南页', url: 'https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1426' }, '国际路径结构的对照；本版不作引用依据'],
-          ['WHO', 'Classification of Tumours: Female Genital Tumours', '第 5 版（年份未核实）', { text: '未取得原件，据 IARC 官方书目页', url: 'https://publications.iarc.fr/Book-And-Report-Series/Who-Classification-Of-Tumours/Female-Genital-Tumours-2020' }, '病理类型命名口径']
+          ['国家卫健委', '《86 个罕见病病种诊疗指南（2025 年版）》骨肉瘤 / 尤文肉瘤 / 骨巨细胞瘤分册', '2025 年版', { text: '未取得原件，据官网目录页', url: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml' }, '中文定义、确诊路径（穿刺活检为先）与随访口径的对照'],
+          ['CSCO', 'CSCO 骨与软组织肿瘤诊疗指南', '2025（官网直链未核实）', { text: '未取得原件，据二次发布报道', url: 'https://bydrug.pharmcube.com/news/detail/80bc7aa819ee2ab3192d5099a40de05d' }, '国内路径与药物可及性对照；本版不作引用依据'],
+          ['NCCN', 'NCCN Guidelines · Bone Cancer', '2.2025（现行版本号未核实）', { text: '未取得原件，据 JNCCN 文献', url: 'https://pubmed.ncbi.nlm.nih.gov/40203873' }, '国际路径结构对照；本版不作引用依据'],
+          ['AJCC', 'AJCC Cancer Staging Manual Version 9（骨肿瘤章节滚动更新）', 'v9', { text: '未取得章节原文，据官网页', url: 'https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/version-9' }, '分期体系命名口径']
         ]
       },
       points: [
         '指南给的是「通常怎么做」，不是「你该怎么做」；本台引用一律带机构与版本，查不到版本就写「版本未核实」。',
         '未取得原件的文件只记「存在」与「大致讲什么」，不引用其具体条文，页码写「页码待核」。',
-        '本项目 2026-10-21 探测过国家药监局药物临床试验登记与信息公示平台（HTTP 202 挑战页）与 ChiCTR（HTTP 405），均判定不可采集；覆盖未知不等于没有登记。'
+        '中国官方级来源优先：流行病学与诊疗口径以卫健委指南为准；药物适应证以 NMPA 批件为准（本台未收录任何「骨肉瘤适应证」药物主张——安罗替尼获批适应证为软组织肉瘤，不含骨肉瘤）。'
       ],
       sources: [
-        { org: 'FIGO', doc: 'FIGO staging for carcinoma of the cervix uteri', version: '2018 修订', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.cancer.gov/types/cervical/hp/cervical-treatment-pdq', note: '据 NCI PDQ 宫颈癌治疗（含 FIGO 分期说明）' },
-        { org: 'CSCO', doc: 'CSCO 宫颈癌诊疗指南', version: '版本未核实', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.pmphmall.com/gdsdetail/660506-338835', note: '出版方书目页（2026 版在售）；全文未核对，不据此引用' },
-        { org: 'NCCN', doc: 'NCCN Guidelines · Cervical Cancer', version: '版本未核实', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1426', note: 'NCCN 官网指南页；下载全文需注册' }
+        { org: '国家卫健委', doc: '《86 个罕见病病种诊疗指南（2025 年版）》', version: '2025 年版', original: false, page: '页码待核',
+          secondaryUrl: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml', note: '官网目录页（官方入口）' },
+        { org: 'CSCO', doc: 'CSCO 骨与软组织肿瘤诊疗指南', version: '2025', original: false, page: '页码待核',
+          secondaryUrl: 'https://bydrug.pharmcube.com/news/detail/80bc7aa819ee2ab3192d5099a40de05d', note: '二次发布报道；官网直链未核实，不据此引用' }
       ]
     },
     {
       id: 'landscape',
       title: '目前治疗全景概要',
       intro: '下面按病期与线序列出指南里出现过的手段类别。这是「世界上大致有哪些办法」的地图，不是给你排的先后顺序，'
-        + '也不含剂量、疗程与适用条件——那些必须由医生按你的分期与病理决定。',
+        + '也不含剂量、疗程与适用条件——那些必须由医生按你的病理类型与分期决定。',
       groups: [
         {
-          label: '早期（可以手术时）',
+          label: '确诊与术前',
           points: [
-            '手术：按期别与是否要求保留生育，指南结构里出现锥切、根治性宫颈切除、广泛子宫切除与盆腔淋巴结评估等术式；具体做哪一种属医生判断。',
-            '生育保留：锥切与根治性宫颈切除等保留子宫或宫颈的术式被列出，适用条件严格；本台只记录「医生提过哪些、你怎么想」。',
-            '术后辅助治疗：按病理高危因素决定是否加放疗或放化疗，属医生判断。'
+            '活检：穿刺活检是首选（通道设计会与最终手术统筹，由骨肿瘤专科做）。',
+            '新辅助化疗：高级别骨肉瘤确诊后通常先做化疗（大剂量甲氨蝶呤、多柔比星、顺铂等组合，方案按医嘱原文）。',
+            '分期评估：局部 MRI + 胸部 CT（骨肉瘤转移几乎只看肺）等，按医生安排。'
           ]
         },
         {
-          label: '局部晚期 / 不能手术时',
+          label: '手术',
           points: [
-            '根治性同步放化疗（dCRT）：体外放疗 + 含铂化疗 + 后装（近距离放疗）是这一段的路径主干。',
-            '后装（brachytherapy）：近距离放疗是根治性放疗的组成部分；本台只记疗程与日期，不评价剂量方案。',
-            '治疗中的支持：营养支持、贫血与不良反应处理被列为支持性内容；本台只记录你的症状与检查值。'
+            '保肢手术：在肿瘤反应区外广泛切除，多数四肢骨肉瘤可以保肢；重建常用肿瘤型人工假体。',
+            '截肢：无法获得安全边界时的选择；这是医生当面讨论的决定，本台不做判断。',
+            '骨巨细胞瘤：刮除 + 重建为主（交界性肿瘤，与恶性肿瘤路径不同）。'
           ]
         },
         {
-          label: '复发 / 转移后',
+          label: '术后与复发 / 转移后',
           points: [
-            '系统治疗：化疗、靶向治疗、免疫治疗在不同线序中被列出。本项目未取得指南全文，此处只写类别，不写具体药物与线序。',
-            '局部处理：复发灶的放疗或手术在特定情形下被列出。',
+            '辅助化疗：术后按方案继续（是否做、做几个周期由医生定）。',
+            '复发 / 转移后：手术、化疗、靶向等手段在不同情形下被列出；本台不写具体药物主张。',
             '临床研究：指南把「参加登记良好的临床试验」列为一项正式选项，不是最后手段。'
           ]
         },
         {
           label: '贯穿全程的两件事',
           points: [
-            '放疗后的长期影响：阴道狭窄、淋巴水肿、治疗诱导绝经与卵巢功能变化，属随访内容；本台只记录你自己的感受与处理，不判定严重程度。',
-            '随访节奏：阴道残端细胞学等复查项目按医生安排执行；本台只把「约在哪天、做了没有」整理成时间线。'
+            '功能与假体随访：保肢术后的肢体功能由医生评估（如 MSTS 评分）；本台只记录本人自述与报告摘录。',
+            '随访节律：中文指南口径为术后第 1–2 年每 3 个月、逐渐拉长（【待核：原件 PDF 逐条】）；胸 CT 是肺转移监测的首选。本台只把「约在哪天、做了没有」整理成时间线。'
           ]
         }
       ],
@@ -102,26 +102,27 @@ window.DISEASE_PRIMER = {
         '以上是文献与指南里列出的手段，按病期与线序排列，不代表任何一项适合你。选哪一个，这一句需要问你的医生。'
       ],
       sources: [
-        { org: 'FIGO', doc: 'FIGO staging for carcinoma of the cervix uteri', version: '2018 修订', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.cancer.gov/types/cervical/hp/cervical-treatment-pdq', note: '据 NCI PDQ 宫颈癌治疗（含 FIGO 分期说明）' },
-        { org: 'CSCO', doc: 'CSCO 宫颈癌诊疗指南', version: '版本未核实', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.pmphmall.com/gdsdetail/660506-338835', note: '出版方书目页（2026 版在售）；全文未核对，不据此引用' }
+        { org: '国家卫健委', doc: '《86 个罕见病病种诊疗指南（2025 年版）》骨肉瘤分册', version: '2025 年版', original: false, page: '页码待核',
+          secondaryUrl: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml', note: '官网目录页（官方入口）' },
+        { org: '《经典型骨肉瘤诊疗指南》', doc: '中文存档 PDF', version: '2021', original: false, page: '页码待核',
+          secondaryUrl: 'https://njguloulib.yuntsg.com/ueditor/jsp/upload/file/20210608/1623115700638048095.pdf', note: '二次来源（图书馆存档件）；随访节律与肺转出口径参照' }
       ]
     },
     {
       id: 'trend',
       title: '发展趋势',
-      intro: '这一段只写已经发生的事：哪一版分期生效、登记平台上多了多少条、哪个渠道查不到。不写预测，不做评价。',
+      intro: '这一段只写已经发生的事：哪一版指南生效、登记平台上检索到多少条、哪个渠道查不到。不写预测，不做评价。',
       points: [
-        '2018 年：FIGO 发布宫颈癌 2018 修订分期，把影像（r）与病理（p）淋巴结结果纳入 IIIC1 / IIIC2。',
-        '截至 2026-10-21：ClinicalTrials.gov 以 query.cond=cervical cancer、StudyFirstPostDate 2026-01-01 至 2026-10-21 检索到 158 条登记；人工筛出 14 条，其中Ⅰ期 2 条、Ⅱ期 7 条、Ⅲ期 2 条、观察性 1 条、登记未分期 2 条。',
-        '2026-10-21：国家药监局药物临床试验登记与信息公示平台返回 HTTP 202 挑战页、ChiCTR 返回 HTTP 405，两个渠道本轮判定不可采集，中国登记覆盖数未知；因此上面 158 条只代表 ClinicalTrials.gov 一个通道。'
+        '2025 年：国家卫健委发布《86 个罕见病病种诊疗指南（2025 年版）》，含骨肉瘤、尤文肉瘤、骨巨细胞瘤单病种指南。',
+        '2025 年：CSCO 发布《骨与软组织肿瘤诊疗指南 2025》（据二次发布报道，官网直链未核实）。',
+        'NCCN Bone Cancer 从 2.2025（JNCCN 2025;13(4):e250017）继续更新，现行版本号未核实。',
+        '截至 2026-11-10：ClinicalTrials.gov 以 query.cond=osteosarcoma、query.locn=China 检索到 87 项登记（其中招募中 19 项，API v2 实测）；本台演示摘录其中 6 条，状态未核实。',
+        'ChiCTR / 药物临床试验登记平台本轮未采集，中国登记覆盖数未知。'
       ],
       sources: [
-        { org: 'FIGO', doc: 'FIGO staging for carcinoma of the cervix uteri', version: '2018 修订', original: false, page: '页码待核',
-          secondaryUrl: 'https://www.cancer.gov/types/cervical/hp/cervical-treatment-pdq', note: '据 NCI PDQ 宫颈癌治疗（含 FIGO 分期说明）' },
-        { org: 'ClinicalTrials.gov', doc: 'API v2 检索（query.cond=cervical cancer；StudyFirstPostDate 2026-01-01–2026-10-21）', version: '检索日 2026-10-21', original: true, nolink: true, note: '一手登记数据，本项目自采；快照存 research/cervical-cancer/raw-2026.json，无公开 URL' },
-        { org: 'NMPA 药品审评中心 / ChiCTR', doc: '两个国内登记平台的采集探测记录', version: '探测日 2026-10-21', original: true, nolink: true, note: '只存判定（HTTP 202 挑战页 / HTTP 405），未复制站点内容；探测记录存 research/cervical-cancer/cn-registry-attempt.json，无公开 URL' }
+        { org: 'ClinicalTrials.gov', doc: 'API v2 检索（query.cond=osteosarcoma；query.locn=China；2026-11-10 实测）', version: '检索日 2026-11-10', original: true, nolink: true, note: '一手登记数据，本项目自采；快照存 research/bone-cancer/（M4 采集后），无公开 URL' },
+        { org: '国家卫健委', doc: '《86 个罕见病病种诊疗指南（2025 年版）》目录页', version: '2025 年版', original: false, page: '—',
+          secondaryUrl: 'https://www.nhc.gov.cn/yzygj/c100068/202507/5b3f41180a42465eb9eec34597bacaf2.shtml', note: '官方入口' }
       ]
     }
   ]

@@ -1,18 +1,21 @@
 'use strict';
-/* 小莲宝 CerviPal v0.1.0 — 交互原型。患者数据全部为模拟；临床试验列表为真实登记摘录（状态未核实）。
-   不读写真实文件、不调用模型或宿主 API。视觉体系沿用家族原型（淋巴瘤 v0.1 → 小畅宝 v0.2 → 小咽宝 v0.1），
-   品牌色重映射为小莲宝青绿 #18AFA5（docs/DESIGN-SESSION.md D4：青绿 + 白 + 文字标识）。
+/* 小骨宝 OsteoPal v0.1.0 — 交互原型。患者数据全部为模拟；临床试验列表为真实登记摘录（状态未核实）。
+   不读写真实文件、不调用模型或宿主 API。视觉与交互结构移植自家族原型（cervical-workbench v0.2，
+   最近过 V1 的同形仓），病种语义全部重写为骨癌口径；品牌色重映射为小骨宝暖赭 #C07A3E
+   （--violet-deep 压深到 #8F5A26 保证正文对比度 ≥ 4.5:1）。
 
-   与食管癌原型的结构差异（改前先看，两边不许互相抄）：
-   1. 一级页 12 个：SPEC §4 的 11 个 + 脚手架要求的「资料库」（records）；
-   2. 两个专属一级页并存：「性与生育」「放疗与长期影响」——**不许合并**，
-      SPEC 差异自查就是这么定的（其它癌种各一个专属页，宫颈癌两个）；
-   3. 一图秀默认是 SCC-Ag + 体重两条数值线 + 阴道狭窄等级分类节点（只画点不连线）；
-   4. 性健康 / 阴道扩张记录默认私密：列表默认折叠，需要本人点开才显示（A4）。 */
+   与 cervical 底本的结构差异（改前先看，两边不许互相抄）：
+   1. 一级页 9 个：看板 / 资料库 / 影像随访 / 分期与评估 / 治疗历程 / 功能与随访 / 检查与指标
+      / 病情一图秀 / 临床研究（cervical 的性与生育、放疗与长期影响、营养支持、心理支持不适用，已裁剪）；
+   2. 新增专属一级页「影像随访」（骨癌随访以影像为核心）与「功能与随访」
+      （功能自评 + 假体与重建随访 + 随访节律 + 私密感受，吸收 cervical mind/review 语义）；
+   3. 一图秀默认是 ALP + 疼痛自评两条数值线 + 行走情况分类节点（只画点不连线）；
+   4. 功能自评里的私密感受默认折叠，需要本人点开才显示；
+   5. 指标主线换骨癌口径：ALP / LDH / 血钙 + 血象 + 功能自评；SCC-Ag / CEA / HPV 语义禁止回流。 */
 
 const APP_INFO = {
   version: '0.1.0',
-  build: '2026-10-21',
+  build: '2026-11-11',
   channel: 'prototype',
   channelLabel: '交互原型 · 未接入 DSH'
 };
@@ -29,13 +32,11 @@ const icons = {
   home: 'M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9',
   badge: 'M12 3l7 4v10l-7 4-7-4V7ZM9 12l2 2 4-4',
   drip: 'M12 3v6m0 0a5 5 0 1 0 0 10 5 5 0 0 0 0-10ZM7 7h10',
-  /* 后装/放疗：一个放射源 + 四周射线 */
-  ray: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1',
-  /* 性与生育：花（保留生育的意象，不做人体图示） */
-  flower: 'M12 9a2.4 2.4 0 1 1 0 5 2.4 2.4 0 0 1 0-5ZM12 9c0-2 1-3.4 2.4-3.4S17 7 17 8.7c0 1.7-2 2.8-5 2.8M12 14c0 2-1 3.4-2.4 3.4S7 16 7 14.3c0-1.7 2-2.8 5-2.8M9.4 10.4C7.8 9.2 6 8.6 5 9.6s-.2 2.8 1.4 4c1.6 1.2 3.6.6 5.6-.6M14.6 13.6c1.6 1.2 3.4 1.8 4.4.8s.2-2.8-1.4-4c-1.6-1.2-3.6-.6-5.6.6',
+  /* 影像随访：一张片子 + 观察线 */
+  xray: 'M5 3h14v18H5ZM12 3v18M8 8h2m4 0h2M8 12h2m4 0h2M9 16h6',
   lab: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7 15h10',
   chart: 'M4 3v17h17M7 14l4-5 4 3 5-7',
-  leaf: 'M20 4c-9.4 0-15 4.1-15 9.6A5.4 5.4 0 0 0 10.4 19C16 19 20 13.4 20 4ZM5.5 18.6C8 13.4 12 10.6 17 9.6',
+  /* 功能与随访：走路的小人（保肢后的行走是核心功能线） */
   heart: 'M12 20.3c-4.6-2.9-7.4-5.6-7.4-9A4.1 4.1 0 0 1 12 8.4a4.1 4.1 0 0 1 7.4 2.9c0 3.4-2.8 6.1-7.4 9Z',
   calendar: 'M4 5h16v16H4ZM8 3v4m8-4v4M4 10h16m-12 4h2m4 0h2m-8 3h2',
   flask: 'M9 3h6v5l5 9a2 2 0 0 1-2 3H6a2 2 0 0 1-2-3l5-9Z',
@@ -45,43 +46,36 @@ const icons = {
   report: 'M6 3h9l4 4v14H6ZM14 3v5h5M9 12h6M9 16h4'
 };
 /* 看板任务卡用的是页面键，图标表里名字不同；别名避免拼错键时静默输出空 path。 */
-const ICON_ALIAS = { records: 'folder', review: 'calendar', labs: 'report', timeline: 'chart', mind: 'heart', nutrition: 'leaf', treatment: 'drip', stage: 'badge', trials: 'flask', dashboard: 'home', late: 'ray', fertility: 'flower', prep: 'calendar' };
+const ICON_ALIAS = { records: 'folder', imaging: 'xray', function: 'heart', review: 'calendar', labs: 'report', timeline: 'chart', treatment: 'drip', stage: 'badge', trials: 'flask', dashboard: 'home' };
 const icon = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[k] || icons[ICON_ALIAS[k]] || icons.badge}"/></svg>`;
 
-/* 12 个一级页：SPEC §4 的 11 个 + 「资料库」（家族脚手架要求）。
-   顺序照 SPEC：看板 → 资料库 → 我的分期 → 治疗历程 → 性与生育 → 放疗与长期影响
-   → 检查与指标 → 一图秀 → 营养支持 → 心理支持 → 复诊准备 → 临床研究。 */
+/* 9 个一级页：SPEC §4（骨癌裁剪后）+「资料库」（家族脚手架要求）。
+   顺序照 SPEC：看板 → 资料库 → 影像随访 → 分期与评估 → 治疗历程
+   → 功能与随访 → 检查与指标 → 病情一图秀 → 临床研究。 */
 const PAGES = [
-  ['dashboard', '看板', 'home'], ['records', '病情整理', 'folder'], ['stage', '我的分期', 'badge'],
-  ['treatment', '治疗历程', 'drip'], ['fertility', '性与生育', 'flower'], ['late', '放疗与长期影响', 'ray'],
-  ['labs', '检查与指标', 'report'], ['timeline', '病情一图秀', 'chart'], ['nutrition', '营养支持', 'leaf'],
-  ['mind', '心理支持', 'heart'], ['review', '复诊准备', 'calendar'], ['trials', '临床研究', 'flask']
+  ['dashboard', '看板', 'home'], ['records', '资料库', 'folder'], ['imaging', '影像随访', 'xray'],
+  ['stage', '分期与评估', 'badge'], ['treatment', '治疗历程', 'drip'], ['function', '功能与随访', 'heart'],
+  ['labs', '检查与指标', 'report'], ['timeline', '病情一图秀', 'chart'], ['trials', '临床研究', 'flask']
 ];
 const SUBPAGES = {
   records: ['资料库', '整理草稿 / 核对', '病情档案', '指标检测', '病情汇总'],
+  imaging: ['影像记录', '原件与解析', '复查间隔'],
   stage: ['分期档案', '病理与分子', '会诊与二次意见'],
-  treatment: ['治疗路径', '手术记录', '放疗疗程', '系统治疗'],
-  fertility: ['生育档案', '生育保留记录', '卵巢与月经', '性健康（私密）'],
-  late: ['放疗后事件', '淋巴水肿', '阴道与扩张', '绝经与骨健康'],
-  labs: ['肿瘤标志物', '细胞学与 HPV', '影像随访'],
+  treatment: ['治疗路径', '手术记录', '化疗周期'],
+  function: ['功能自评', '假体与重建随访', '随访节律与求助', '感受与私密记录'],
+  labs: ['分类指标', '化验报告表', '口径说明'],
   timeline: ['数值曲线', '分类与事件', '数据口径'],
-  nutrition: ['进食量记录', '补充剂与医嘱'],
-  mind: ['当下感受', '身体形象与亲密关系', '母亲身份与家庭沟通'],
-  review: ['复诊节奏', '三类随访节点', '筛查与预防', '就诊准备'],
   trials: ['2026 线索', '已收藏', '入组问题']
 };
 const SUBTITLES = {
-  dashboard: '分期、路径、长期影响与随访放在一起，让下一次门诊有据可查。',
+  dashboard: '分期、治疗节点、功能与随访放在一起，让下一次门诊有据可查。',
   records: '上传 → 解析 → 确认指标 → 入库；原件永远保留，接受之前都只是候选。',
-  stage: 'FIGO 2018 分期由医生给出，工作台只记录分期、依据与日期，不替你重算。',
-  treatment: '路径三选一（手术 / 根治性放化疗 / 系统治疗）；外照射与后装分列，改过的路径留着不覆盖。',
-  fertility: '生育是记录不是承诺：这里存"问了什么、医生答了什么原文"；性健康默认私密。',
-  late: '放疗结束后才出现的问题，按时间一条条记下来；不给分级建议，也不推产品。',
-  labs: 'SCC-Ag 只对鳞癌有意义；细胞学与 HPV 只存报告原文，界面不做重判读。',
-  timeline: 'SCC-Ag、体重与阴道狭窄放回同一段时间里，看见变化发生在哪一步。',
-  nutrition: '这一页记"吃了多少"——份量、食物、症状；不给食谱也不给剂量。',
-  mind: '害怕、疲惫、对身体和亲密的担心都算正常反应；这里的内容默认只属于你。',
-  review: '该带什么、该问什么，提前写下来，诊室里就不用凭记忆。',
+  imaging: '每次影像检查按「模态 / 部位 / 机构 / 报告原文摘录」记一条；片子散在各医院，先在这里对齐。',
+  stage: 'Enneking / AJCC 分期由医生给出，工作台只记录期别、依据与日期，不替你重算。',
+  treatment: '一次手术、一个化疗周期是两条记录；路径改过就新增一条，旧的留着不覆盖。',
+  function: '功能自评是本人记录，不是医生评估；MSTS 评分由医生给，这里不自动打分。',
+  labs: 'ALP / LDH 是骨癌随访常用化验；不同方法、不同机构不合并比较。',
+  timeline: 'ALP、体重与行走情况放回同一段时间里，看见变化发生在哪一步。',
   trials: '线索不是推荐；先弄清入组条件，再决定要不要问。'
 };
 
@@ -90,19 +84,16 @@ const D = window.DEMO_DATA;
 const PROFILES = {}, METRICS = {}, EVENTS = {}, DASH_KEYS = {}, DOCS = {}, CANDS = {};
 for (const [k, p] of Object.entries(D.profiles)) {
   /* 字段逐条显式列出：生成器加字段时这里会同步补，不会静默丢字段。
-     宫颈癌专属：figo / rt / lateEffects / lymphedema / vagina / menopause / hormone /
-     fertility / fertSurgery / ovary / sexual / cytology / hpv / imaging / screening
-     （食管癌那套 swallow/access/dilation/monitor/endoscopy 不许抄回来）。 */
+     骨癌专属：biopsyNote / staging / imaging / functSelf / prosthesis / helpPlan。
+     cervical 的 figo / rt / lateEffects / lymphedema / vagina / menopause / hormone /
+     fertility / sexual / cytology / hpv / screening / nutrition 不许抄回来。 */
   PROFILES[k] = {
     name: p.name, sex: p.sex, age: p.age, meta: p.meta, headline: p.headline, stage: p.stage,
-    mindset: p.mindset, histology: p.histology, hpvStatus: p.hpv_status,
+    mindset: p.mindset, histology: p.histology, biopsyNote: p.biopsy_note ?? p.biopsyNote ?? null,
     molecular: p.molecular, path: p.path, lines: p.lines, cycles: p.cycles, rhythm: p.rhythm,
-    pathway: p.pathway || null, figo: p.figo || null, surgery: p.surgery || null, rt: p.rt || null,
-    lateEffects: p.lateEffects || null, lymphedema: p.lymphedema || null, vagina: p.vagina || null,
-    menopause: p.menopause || null, hormone: p.hormone || [], fertility: p.fertility || null,
-    fertSurgery: p.fertSurgery || null, ovary: p.ovary || null, sexual: p.sexual || null,
-    cytology: p.cytology || null, hpv: p.hpv || null, imaging: p.imaging || null,
-    screening: p.screening || null, nutrition: p.nutrition || null, supplements: p.supplements || [],
+    pathway: p.pathway || null, staging: p.staging || null, surgery: p.surgery || null,
+    imaging: p.imaging || null, functSelf: p.functSelf || null, prosthesis: p.prosthesis || null,
+    helpPlan: p.helpPlan || null,
     viewpoints: p.viewpoints, activity: p.activity, familyTalk: p.familyTalk,
     docs: p.docs || [], candidates: p.candidates || [], pathology: p.pathology || null
   };
@@ -120,19 +111,19 @@ for (const [k, p] of Object.entries(D.profiles)) {
 const TRIALS = D.trials;
 
 /* ---------------- state ---------------- */
-/* 一图秀默认：SCC-Ag + 体重两条数值线 + 阴道狭窄等级（分类节点，不连线）。
-   进页面先看"肿瘤标志物降没降、体重掉没掉"，而不是血象。 */
-const state = { view: 'dashboard', profile: 'A', agentOpen: false, agentSize: 'std', sel: ['scc', 'wt', 'vagina'],
+/* 一图秀默认：ALP + 疼痛自评两条数值线 + 行走情况分类节点（不连线）。
+   进页面先看"骨相关化验和功能怎么样"，而不是血象。 */
+const state = { view: 'dashboard', profile: 'A', agentOpen: false, agentSize: 'std', sel: ['alp', 'pain', 'walk'],
   range: 'all', zoom: 100, toggles: { treatment: true, keypoints: true }, pin: null, saved: [], sub: {},
   query: '', parsing: false, parseError: false, loaded: {}, parsingName: '', lastUpload: null, uploads: 0,
   privateOpen: false, trialTopic: '全部' };
-/* 换档案后的默认选择必须与初始状态同构：鳞癌 = SCC-Ag + 体重；腺癌 = CEA + 体重。
-   分类节点按档案实际有的那条挑（A 用阴道狭窄，B 用月经恢复）。 */
+/* 换档案后的默认选择必须与初始状态同构：A = ALP + 疼痛自评；B = ALP + LDH。
+   分类节点按档案实际有的那条挑（两个档案都有行走情况）。 */
 const defaultSel = (k) => {
   const mm = METRICS[k] || {};
   const num = (DASH_KEYS[k] || []).filter((c) => mm[c] && mm[c].points.some(p => typeof p.v === 'number')).slice(0, 2);
   const out = num.slice();
-  const qual = ['vagina', 'menses', 'lymphedema', 'bowel'].find((c) => mm[c] && mm[c].points.length);
+  const qual = ['walk', 'fatigue'].find((c) => mm[c] && mm[c].points.length);
   if (qual) out.push(qual);
   return out.slice(0, 3);
 };
@@ -200,17 +191,13 @@ function mcard(key, m) {
 }
 /* ---------------- 一图秀引擎（统一画布 · 多序列归一化 · 移植家族基因） ---------------- */
 const CW = 980, CH = 420, CX0 = 62, CX1 = 954, CY0 = 132, CY1 = 366;
-const CAT_ORDER = ['肿瘤标志物', '营养', '放疗影响', '妇科症状', '激素与卵巢', '血象', '生化', '电解质'];
+const CAT_ORDER = ['骨与肿瘤相关', '血象', '生化', '电解质', '营养', '自评与功能'];
 /* 分类序列的档位顺序：**必须显式声明，不许按出现顺序排**。
-   阴道狭窄、淋巴水肿、腹泻分级都有客观严重度，顺序错了图就在说谎。
+   行走情况、疲劳自评是本人自述档位，顺序错了图就在说谎。
    没在这里声明的分类指标（自述类）按"只画节点、不定位严重度"处理。 */
 const QUAL_LEVELS = {
-  vagina: ['0 级', '轻度', '中度', '重度'],
-  lymphedema: ['0 期', 'Ⅰ期', 'Ⅱ期', 'Ⅲ期'],
-  bowel: ['0 级', '1 级', '2 级', '3 级'],
-  hotflash: ['无', '偶有', '每天 2–3 次', '每天 4–5 次'],
-  menses: ['未恢复', '已恢复（量略少）', '规律'],
-  discharge: ['无', '少量淡血性', '明显']
+  walk: ['如常', '轻度受限', '需辅助器具', '明显受限'],
+  fatigue: ['无', '轻度', '中度', '重度']
 };
 const fmtNum = (v, dec) => typeof v === 'number' ? v.toFixed(dec ?? 1) : String(v ?? '');
 const shortDate = (d) => d.slice(5).replace('-', '.');
@@ -266,13 +253,13 @@ function smoothPath(coords) {
   return d;
 }
 
-/* 治疗条：周期带（放化疗周期 / 后装分次）+ 评估标记（确诊/手术/分期），两行独立于数据区 */
+/* 治疗条：周期带（化疗周期）+ 评估标记（确诊/手术/分期），两行独立于数据区 */
 function bandsFor(t0, t1) {
   const p = P(), items = [];
   p.cycles.forEach((c, i) => {
     const from = c[1];
     const to = c[4] && p.cycles[i + 1] ? p.cycles[i + 1][1] : addDays(from, 21);
-    items.push({ kind: 'cycle', from, to, label: c[0], color: '#0e837c' });
+    items.push({ kind: 'cycle', from, to, label: c[0], color: '#8f5a26' });
   });
   (EVENTS[state.profile] || []).forEach((e) => {
     if (/确诊|手术|分期/.test(e.label)) items.push({ kind: 'mark', from: e.d, to: e.d, label: e.label, color: e.label.includes('手术') ? '#a03d5c' : '#9a6410' });
@@ -298,7 +285,7 @@ function seriesFor(code, t0, t1) {
   const m = M()[code];
   if (!m) return null;
   const nums = numPts(m);
-  /* 分类序列（阴道狭窄等级 / 淋巴水肿分期 / 月经恢复）：没有数值轴，只画节点与档位文字，
+  /* 分类序列（行走情况 / 疲劳自评）：没有数值轴，只画节点与档位文字，
      绝不连折线——连线会造出"从轻度顺利滑到重度"的假趋势。 */
   if (!nums.length) {
     const lv = QUAL_LEVELS[code] || null;
@@ -414,28 +401,26 @@ const emptyBox = (h, p) => `<div class="empty"><h3>${esc(h)}</h3><p>${esc(p)}</p
 
 /* ---------------- views ---------------- */
 
-/* 放疗长期影响状态卡（A 的专属卡）：只陈述"记录了几条、最近一次是什么"，
-   不给分级建议、不写"需要处理"。 */
-function lateCard(p) {
-  if (!p.lateEffects && !p.lymphedema && !p.vagina) {
-    return `<div class="card"><div class="card-head"><h2>放疗长期影响</h2>${pill('暂无记录', 'grey')}</div>
-      ${emptyBox('还没有放疗后记录', '如果做过盆腔放疗，出现腹泻、腿肿、阴道干涩时，可以在这里一条条记下来。')}</div>`;
+/* 功能自评状态卡（看板摘要卡）：只陈述"记了几条、最近一条是什么"，
+   不打 MSTS 分、不写"恢复良好"。 */
+function functCard(p) {
+  if (!p.functSelf && !p.prosthesis) {
+    return `<div class="card"><div class="card-head"><h2>功能与随访</h2>${pill('暂无记录', 'grey')}</div>
+      ${emptyBox('还没有功能自评记录', '术后恢复期间，把每天能做的一件事记下来，下次门诊直接给医生看。')}</div>`;
   }
-  const le = p.lateEffects ? p.lateEffects.rows[0] : null;
-  const ly = p.lymphedema ? p.lymphedema.rows[0] : null;
-  const vg = p.vagina ? p.vagina.rows[0] : null;
-  return `<div class="card"><div class="card-head"><h2>放疗长期影响</h2>${pill('按记录陈述', 'violet')}</div>
+  const fs = p.functSelf ? p.functSelf.rows[0] : null;
+  const pr = p.prosthesis ? p.prosthesis.rows[p.prosthesis.rows.length - 1] : null;
+  return `<div class="card"><div class="card-head"><h2>功能与随访</h2>${pill('按记录陈述', 'violet')}</div>
     <div class="rows">
-      ${le ? row(`最近一次${esc(le[1])}事件`, `${esc(le[0])} · 医生记录 ${esc(le[2] || '未分级')} — ${esc(le[3])}`) : ''}
-      ${ly ? row('下肢淋巴水肿', `${esc(ly[0])} · ${esc(ly[1])} · ${esc(ly[3])}${ly[2] && ly[2] !== '—' ? ` · 医生分期 ${esc(ly[2])}` : ''}`) : ''}
-      ${vg ? row('阴道扩张训练', `${esc(vg[0])} · ${esc(vg[1])}：${esc(vg[2])}${vg[4] ? ' ' + pill('私密', 'grey') : ''}`) : ''}
+      ${fs ? row(`最近一次功能自评：${esc(fs[1])}`, `${esc(fs[0])} · ${esc(fs[2])}（本人记录）`) : ''}
+      ${pr ? row(`最近一次假体随访：${esc(pr[1])}`, `${esc(pr[0])} · ${esc(pr[2])}`) : ''}
     </div>
-    <div class="notice">这里只记录"什么时候、医生写了什么"；分级和处理都由医生给，工作台不做判断。</div>
-    <div class="actions"><button data-action="go-late">打开放疗与长期影响 →</button></div></div>`;
+    <div class="notice">这里只记录"什么时候、本人写了什么、报告摘录了什么"；功能评分与处理都由医生给，工作台不做判断。</div>
+    <div class="actions"><button data-action="go-function">打开功能与随访 →</button></div></div>`;
 }
 
 /* 36 号 §2.6 · 看板首卡状态卡四件：卡头 eyebrow / 派生天数 / 现状行 / 出口按钮排。
-   天数由锚点日（放疗首日或手术日 = Day 0）与当天日期计算，不手填；无锚点整卡显示「待初始化」。
+   天数由锚点日（手术日或穿刺确诊日 = Day 0）与当天日期计算，不手填；无锚点整卡显示「待初始化」。
    出口主按钮进当前阶段核心页；副按钮打开疾病概要（与顶栏「?」同一个整页面板）。 */
 function isoDay(s) {
   const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -449,19 +434,18 @@ function dayDiff(from, to) {
    模块未接入时不渲染，避免留一个点了没反应的按钮。 */
 function primerCta() {
   if (typeof window === 'undefined' || !window.DiseasePrimer) return '';
-  return '<button class="soft" data-primer-cta aria-haspopup="dialog" aria-controls="disease-primer">疾病概要：宫颈癌是什么？</button>';
+  return '<button class="soft" data-primer-cta aria-haspopup="dialog" aria-controls="disease-primer">疾病概要：骨癌是什么？</button>';
 }
 function statusCard(p) {
   const today = new Date().toISOString().slice(0, 10);
   const surgery = (p && p.surgery && p.surgery.rows && p.surgery.rows[0]) || null;
-  const rtRows = (p && p.rt && p.rt.rows) || [];
-  const ebrt = rtRows.find((r) => r[0] === 'EBRT') || rtRows[0] || null;
-  const anchor = surgery ? surgery[0] : (ebrt ? ebrt[1] : '');
-  const anchorLabel = surgery ? surgery[1] : (ebrt ? '根治性同步放化疗首日（EBRT 第 1 次）' : '');
+  const dx = (p.events || []).find((e) => /确诊/.test(e[1])) || null;
+  const anchor = surgery ? surgery[0] : (dx ? dx[0] : '');
+  const anchorLabel = surgery ? surgery[1] : (dx ? '穿刺确诊日（Day 0）' : '');
   const days = dayDiff(anchor, today);
   if (days === null) {
-    return `<div class="stage-strip" data-status-card="uninitialized"><span class="eyebrow">D+N 状态卡</span>`
-      + `<span class="stage-now"><b>待初始化</b><small>未找到锚点日（放疗首日 / 手术日 = Day 0），天数不由本台手填。先去「我的分期」或「治疗历程」补日期；本台暂无独立三步向导。</small></span>`
+    return `<div class="stage-strip" data-status-card="uninitialized"><span class="eyebrow">状态卡</span>`
+      + `<span class="stage-now"><b>待初始化</b><small>未找到锚点日（穿刺确诊日 / 手术日 = Day 0），天数不由本台手填。先去「分期与评估」或「治疗历程」补日期；本台暂无独立三步向导。</small></span>`
       + `<div class="actions"><button class="primary" data-action="go-stage">去补起始日期 →</button>${primerCta()}</div></div>`;
   }
   const next = (p.rhythm || [])[0] || null;
@@ -473,9 +457,9 @@ function statusCard(p) {
   const curDetail = cur ? cur.detail : '';
   const stateTxt = open ? '进行中' : '已结束 · 随访期';
   const core = state.profile === 'B'
-    ? { act: 'go-review', text: '看复诊节奏 →' }
-    : { act: 'go-treatment', text: '看系统治疗周期 →' };
-  return `<div class="stage-strip" data-status-card="ready"><span class="eyebrow">D+${days} 状态卡 · 距${esc(next ? next[0] : '下一阶段')}</span>`
+    ? { act: 'go-function', text: '看随访节律 →' }
+    : { act: 'go-treatment', text: '看化疗周期 →' };
+  return `<div class="stage-strip" data-status-card="ready"><span class="eyebrow">第 ${days} 天状态卡 · 距${esc(next ? next[0] : '下一阶段')}</span>`
     + `<span class="stage-day"><b>第 ${days} 天</b><small>锚点 ${esc(anchor)} ${esc(anchorLabel)}（Day 0）</small></span>`
     + `<span class="stage-now"><b>${esc(curName)} · ${esc(stateTxt)}</b><small>${esc(curDetail)} · ${esc(nextTxt)} · 只引用医生记录与日期</small></span>`
     + `<div class="actions"><button class="primary" data-action="${core.act}">${core.text}</button>${primerCta()}</div></div>`;
@@ -497,22 +481,23 @@ function vDashboard() {
       <div class="chips">${p.path.map((x, i) => `<span class="chip${i === 0 ? ' on' : ''}">${esc(x)}</span>`).join('')}</div>
     </div>
     <div class="stat-band">
-      <div class="stat-tile"><span>FIGO 2018 分期</span><b>${esc(p.stage)}</b><small>医生给出，不自算</small></div>
+      <div class="stat-tile"><span>外科分期</span><b>${esc(p.stage)}</b><small>医生给出，不自算</small></div>
       <div class="stat-tile"><span>最近一次门诊</span><b>${esc(p.rhythm[0] ? '已安排' : '未记录')}</b><small>${esc(nextRhythm ? nextRhythm[3] : '')}</small></div>
     </div>
   </section>
 
   <div class="alert-strip">
-    <b>${isA ? '长期影响是这半年最需要留痕的部分' : '生育保留的随访节奏和普通人不一样'}</b>
+    <b>${isA ? '影像和化验是接下来几个月最需要留痕的部分' : '随访节奏和普通人不一样'}</b>
     <span>${isA
-      ? '放疗结束后出现的腹泻、腿肿、阴道干涩，按发生时间记下来，下次门诊直接给医生看。'
-      : '医生写的是"前 2 年每 3 个月"，具体项目在这页可以逐条对照；月经情况每次门诊都要说。'}</span>
-    <button data-action="${isA ? 'go-late' : 'go-fertility'}">去看看 →</button>
+      ? '每次影像检查（MRI / CT / 骨扫描）和化验单到手就记一条，下次门诊直接给医生看。'
+      : '医生安排的是"前 2 年每 3 个月"，具体项目在这页可以逐条对照；功能恢复也可以按自述记。'}</span>
+    <button data-action="${isA ? 'go-imaging' : 'go-function'}">去看看 →</button>
   </div>
 
   <div class="task-grid">
-    <button class="task-entry" data-action="${isA ? 'add-late' : 'add-fertility'}">${icon('ray')}<b>${isA ? '记一条今天的身体反应' : '记一次月经情况'}</b><span>${isA ? '腹泻、腿肿、潮热都可以，按自述记' : '术后月经恢复是要在门诊说的事'}</span></button>
-    <button class="task-entry" data-action="go-review">${icon('calendar')}<b>复查要带什么</b><span>${esc(nextRhythm ? nextRhythm[0] + ' · ' + nextRhythm[1] : '按医生安排')}</span></button>
+    <button class="task-entry" data-open="chart">${icon('chart')}<b>一图秀摘要（整页）</b><span>当前勾选指标的口径与来源</span></button>
+    <button class="task-entry" data-action="${isA ? 'add-imaging' : 'add-function'}">${icon(isA ? 'xray' : 'heart')}<b>${isA ? '记一次影像检查' : '记一条今天的功能自评'}</b><span>${isA ? '模态、部位、机构、报告摘录' : '抬臂、行走、提重物都可以，按自述记'}</span></button>
+    <button class="task-entry" data-action="go-function">${icon('calendar')}<b>复查要查什么</b><span>${esc(nextRhythm ? nextRhythm[0] + ' · ' + nextRhythm[1] : '按医生安排')}</span></button>
     <button class="task-entry" data-action="go-trials">${icon('flask')}<b>看看 2026 在招什么</b><span>${TRIALS.length} 条登记摘录，不是推荐</span></button>
   </div>
 
@@ -520,7 +505,7 @@ function vDashboard() {
     <div>
       <div class="section-title"><h2>最近的变化</h2><span class="muted">轻点卡片翻面看趋势</span></div>
       <div class="metric-grid">${cards}</div>
-      ${lateCard(p)}
+      ${functCard(p)}
       <div class="card">
         <div class="card-head"><h2>下一次门诊要说的三件事</h2>${pill(esc(nextRhythm ? nextRhythm[3] : '待定'), 'violet')}</div>
         <div class="rows">
@@ -532,21 +517,24 @@ function vDashboard() {
     </div>
     <div>
       <div class="card">
+        <div class="card-head"><h2>整页视图</h2><span class="muted">超过一屏的内容开整页看</span></div>
+        <div class="rows">
+          ${row('病理报告（整页）', '<button class="text-button" data-open="pathology">打开病理报告 →</button>')}
+          ${row('化验记录（整页）', '<button class="text-button" data-open="labs">打开化验记录 →</button>')}
+          ${row('一图秀摘要（整页）', '<button class="text-button" data-open="chart">打开一图秀摘要 →</button>')}
+          ${row('把想问的写下来', '门诊只有几分钟，先说最想问的那一条')}
+          ${row('记录一次功能变化', '按自述写，不用判断恢复得好不好')}
+        </div>
+      <div class="card">
         <div class="card-head"><h2>接下来</h2><span class="muted">医生安排</span></div>
         <div class="rows">${p.rhythm.slice(0, 5).map(r => row(esc(r[0]), `${esc(r[1])} · ${esc(r[3])}`)).join('')}</div>
-        <div class="actions"><button data-action="go-review">打开复诊准备</button></div>
+        <div class="actions"><button data-action="go-function">打开随访节律</button></div>
       </div>
       <div class="card">
         <div class="card-head"><h2>我记下的感受</h2><span class="muted">默认只属于你</span></div>
         <div class="rows">${p.viewpoints.slice(-3).reverse().map(v => row(esc(v[2]), `${esc(v[0])} · ${esc(v[1])}`)).join('')}</div>
-        <div class="actions"><button data-action="go-mind">心理支持 →</button></div>
+        <div class="actions"><button data-action="go-function-priv">功能与随访 · 私密记录 →</button></div>
       </div>
-      <div class="card">
-        <div class="card-head"><h2>今天可以做的事</h2></div>
-        <div class="rows">
-          ${row('把想问的写下来', '门诊只有几分钟，先说最想问的那一条')}
-          ${row('记录一次身体反应', '按自述写，不用判断严重不严重')}
-        </div>
       </div>
     </div>
   </div>`;
@@ -597,10 +585,10 @@ function vRecords() {
   if (sub === 2) {
     return `${pageHead(true)}<div class="grid">
       <div class="card"><div class="card-head"><h2>病情档案</h2></div><div class="rows">
-        ${row('诊断', `${esc(P().histology)} · FIGO ${esc(P().stage)}`, pill('医生给出', 'grey'))}
-        ${row('HPV', P().hpvStatus)}
-        ${row('当前路径', P().path[2])}
-        ${row('生育计划', P().fertility ? P().fertility.rows[1][1] : '未记录')}
+        ${row('诊断', `${esc(P().histology)} · ${esc(P().stage)}`, pill('医生给出', 'grey'))}
+        ${row('病理标本', P().biopsyNote || '未记录')}
+        ${row('当前路径', P().path[2] || P().path[1] || '—')}
+        ${row('随访安排', P().rhythm[0] ? `${P().rhythm[0][0]}：${P().rhythm[0][1]}` : '未记录')}
       </div></div>
       <div class="card"><div class="card-head"><h2>时间线</h2></div><div class="rows">
         ${EVENTS[state.profile].slice().reverse().map(e => row(esc(e.d), esc(e.label))).join('')}
@@ -614,29 +602,29 @@ function vRecords() {
       </tbody></table></div></div>`;
   }
   return `${pageHead(true)}<div class="card"><div class="card-head"><h2>病情汇总（演示）</h2></div><div class="rows">
-    ${row('分期', `FIGO ${esc(P().stage)} · ${esc(P().figo ? P().figo.rows[2][1] : '')}`)}
+    ${row('分期', `${esc(P().stage)} · ${esc(P().staging ? P().staging.rows[2][1] : '')}`)}
     ${row('已在治疗', P().lines.map(l => l.name).join(' → '))}
-    ${row('私密记录', `${(P().sexual || { rows: [] }).rows.length + (P().vagina ? P().vagina.rows.filter(r => r[4]).length : 0)} 条（默认不进导出与摘要）`, pill('不进导出', 'grey'))}
+    ${row('私密记录', `${P().viewpoints.length} 条（默认不进导出与摘要）`, pill('不进导出', 'grey'))}
   </div></div>`;
 }
 
-/* ---------------- 我的分期 ---------------- */
+/* ---------------- 分期与评估 ---------------- */
 function vStage() {
   const p = P(), sub = state.sub.stage || 0;
   if (sub === 0) {
     return `${pageHead(true)}
-    <div class="notice"><b>FIGO 分期是医生给的。</b>工作台只抄「分期 / 依据 / 日期」，不根据影像或病理重算；r = 影像，p = 病理。</div>
-    ${p.figo ? `<div class="card"><div class="card-head"><h2>${esc(p.figo.title)}</h2>${pill('医生给出', 'violet')}</div>
+    <div class="notice"><b>分期是医生给的。</b>工作台只抄「分期 / 依据 / 日期」，不根据影像或病理重算；Enneking 是外科分期（G-T-M），AJCC 是第 9 版滚动更新。</div>
+    ${p.staging ? `<div class="card"><div class="card-head"><h2>${esc(p.staging.title)}</h2>${pill('医生给出', 'violet')}</div>
       <div class="table-wrap"><table class="cycle-table"><thead><tr><th>项目</th><th>记录</th><th>说明 / 出处</th></tr></thead><tbody>
-      ${p.figo.rows.map(r => `<tr><td>${esc(r[0])}</td><td><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td></tr>`).join('')}
+      ${p.staging.rows.map(r => `<tr><td>${esc(r[0])}</td><td><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td></tr>`).join('')}
       </tbody></table></div>
       <div class="actions"><button data-action="add-stage">记一次分期变更</button><button class="soft" data-action="source">看影像原文</button></div></div>` : emptyBox('还没有分期记录', '分期由医生给出后，在这里抄下来。')}
     <div class="grid" style="margin-top:14px">
-      <div class="card"><div class="card-head"><h2>IIIC1 和 IIIC2 的区别</h2></div>
-        <div class="rows">${row('IIIC1', '盆腔淋巴结阳性（r 影像 / p 病理）')}${row('IIIC2', '腹主动脉旁淋巴结阳性')}</div>
+      <div class="card"><div class="card-head"><h2>Enneking 分期的三个字母</h2></div>
+        <div class="rows">${row('G（分级）', '肿瘤级别，由病理给出')}${row('T（范围）', '间室内 / 间室外')}${row('M（转移）', '有无远处转移（骨肉瘤几乎只看肺）')}</div>
         <div class="notice">这段是术语对照，不是对你分期的解释；你的分期看上面那张表。</div></div>
       <div class="card"><div class="card-head"><h2>医生原话</h2></div>
-        <div class="rows">${row(esc(p.figo ? p.figo.rows[4][0] : '—'), esc(p.figo ? p.figo.rows[4][1] : ''))}</div>
+        <div class="rows">${row(esc(p.staging ? p.staging.rows[0][0] : '—'), esc(p.staging ? p.staging.rows[0][1] : ''))}</div>
         <div class="notice">原话照抄，工作台不加解释。</div></div>
     </div>`;
   }
@@ -652,12 +640,12 @@ function vStage() {
   }
   return `${pageHead(true)}<div class="grid">
     <div class="card"><div class="card-head"><h2>会诊记录</h2></div><div class="rows">
-      ${row('2026 多学科讨论', state.profile === 'A' ? '影像提示盆腔淋巴结阳性，建议根治性放化疗（不是手术）' : '病灶 2.4 cm、无脉管浸润，可走保留子宫的术式')}
+      ${row('2026 多学科讨论', state.profile === 'A' ? '穿刺确诊骨肉瘤，先做新辅助化疗，手术方案等化疗反应评估后再定（会诊意见摘录）' : '化疗反应 92%，按计划行保肢手术（会诊意见摘录）')}
       ${row('二次意见', '尚未做；如需要，把病理切片与影像光盘带上')}
     </div><div class="notice">会诊意见是"一条信息"，最终方案由你和主诊医生定。</div></div>
     <div class="card"><div class="card-head"><h2>想再问的问题</h2></div><div class="rows">
-      ${row('分期是否可能变', '如果后续影像或病理有新证据，问医生要不要重新分期')}
-      ${row('淋巴结怎么确认', '影像阳性是否需要穿刺或病理证实（r 与 p 的差别）')}
+      ${row('分期是否可能变', '如果化疗后影像有新证据，问医生要不要重新分期')}
+      ${row('保肢还是截肢怎么定', '边界能不能获得安全范围是关键（医生原话口径）；这是要当面问的问题，本台不做判断')}
     </div><div class="actions"><button data-action="add-question">加入复诊清单</button></div></div>
   </div>`;
 }
@@ -670,11 +658,11 @@ function vTreatment() {
     ${p.pathway ? `<div class="card"><div class="card-head"><h2>${esc(p.pathway.title)}</h2></div><div class="rows">
       ${p.pathway.rows.map(r => row(`${pill(r[0], r[0] === '当前' ? 'green' : 'grey')} ${esc(r[1])}`, `${esc(r[2])} · ${esc(r[3])}<br><span class="muted">${esc(r[4])}</span>`)).join('')}
     </div></div>` : emptyBox('还没有路径记录', '路径由医生确定后在这里记一条。')}
-    <div class="grid" style="margin-top:14px">
-      <div class="card"><div class="card-head"><h2>路径三选一</h2></div><div class="rows">
-        ${row('手术', '早期、病灶局限；是否保留生育由医生评估')}
-        ${row('根治性放化疗', '局部晚期常用；含外照射 + 后装')}
-        ${row('系统治疗', '复发 / 转移时；方案按医生给')}
+      <div class="grid" style="margin-top:14px">
+      <div class="card"><div class="card-head"><h2>骨肉瘤的标准路径段</h2></div><div class="rows">
+        ${row('新辅助化疗', '确诊后先做几个周期，为手术创造条件（医生安排）')}
+        ${row('手术（保肢 / 截肢）', '能否保肢看边界能不能获得安全范围；重建方式由医生定')}
+        ${row('辅助化疗与随访', '术后按方案继续；随访节律见「功能与随访」')}
       </div><div class="notice">这一段是路径说明，不是给你的选择建议。</div></div>
       <div class="card"><div class="card-head"><h2>治疗线</h2></div><div class="rows">
         ${p.lines.map(l => row(esc(l.name), esc(l.detail), l.done ? pill('已完成', 'green') : pill('进行中', 'yellow'))).join('')}
@@ -683,38 +671,28 @@ function vTreatment() {
   }
   if (sub === 1) {
     if (!p.surgery) {
-      return `${pageHead(true)}${emptyBox('没有手术记录', '这个档案走的是根治性放化疗路径，未做手术；如果以后做了手术，在这里记术式、范围、切缘与淋巴清扫。')}
+      return `${pageHead(true)}${emptyBox('没有手术记录', '这个档案还没到手术这一步（新辅助化疗中）；以后做了手术，在这里记术式、边界、重建方式与切缘。')}
       <div class="card"><div class="card-head"><h2>为什么"没手术"也要说清楚</h2></div>
-      <div class="rows">${row('当前路径', esc(p.path[2]))}${row('医生原话', esc(p.pathway ? p.pathway.rows[0][4] : ''))}</div></div>`;
+      <div class="rows">${row('当前路径', esc(p.path[2] || '—'))}${row('医生原话', esc(p.pathway ? p.pathway.rows[0][4] : '分期评估后由医生给出'))}</div></div>`;
     }
     return `${pageHead(true)}<div class="card"><div class="card-head"><h2>${esc(p.surgery.title)}</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>术式</th><th>入路</th><th>淋巴清扫</th><th>切缘</th><th>机构</th></tr></thead><tbody>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>术式</th><th>入路</th><th>重建方式</th><th>切缘</th><th>机构</th></tr></thead><tbody>
       ${p.surgery.rows.map(r => `<tr><td>${esc(r[0])}</td><td><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td><td>${esc(r[5])}</td></tr>`).join('')}
       </tbody></table></div>
       <div class="rows">${p.surgery.rows.map(r => row('手术备注', esc(r[6]))).join('')}</div>
-      <div class="notice">只记做了什么，不评价"做得够不够"；术式选择与切缘判断以手术记录和病理报告为准。</div></div>`;
+      <div class="notice">只记做了什么，不评价"做得够不够"；术式选择与切缘判断以手术记录和病理报告为准。假体随访在「功能与随访」页。</div></div>`;
   }
   if (sub === 2) {
-    if (!p.rt) {
-      return `${pageHead(true)}${emptyBox('没有放疗记录', '这个档案走的是手术路径，未做放疗。')}`;
+    if (!p.cycles.length) {
+      return `${pageHead(true)}${emptyBox('还没有化疗周期记录', '化疗每完成一个周期记一条：日期、方案（按医嘱原文）、状态。')}
+      <div class="card"><div class="card-head"><h2>为什么按周期记</h2></div>
+      <div class="rows">${row('一个周期 = 一条记录', '不按天数打勾；周期与周期之间有评估节点')}${row('方案原文', '药物与剂量按医嘱原文摘录，本台不换算、不建议')}</div></div>`;
     }
-    const ebrt = p.rt.rows.filter(r => r[0] === 'EBRT');
-    const brachy = p.rt.rows.filter(r => r[0] === '后装');
-    return `${pageHead(true)}
-    <div class="notice"><b>外照射与后装分两列记，不合成"总剂量"。</b>两者剂量学不能直接相加，合成一个数会误导。</div>
-    <div class="grid">
-      <div class="card"><div class="card-head"><h2>外照射（EBRT）</h2>${pill('体外照射', 'violet')}</div>
-        <div class="rows">${ebrt.map(r => row(`${esc(r[1])} → ${esc(r[2])}`, `${esc(r[3])} · ${esc(r[4])}<br><span class="muted">${esc(r[5])}</span>`)).join('')}</div></div>
-      <div class="card"><div class="card-head"><h2>近距离治疗（后装）</h2>${pill('腔内照射', 'violet')}</div>
-        <div class="rows">${brachy.map(r => row(`${esc(r[1])} → ${esc(r[2])}`, `${esc(r[3])} · ${esc(r[4])}<br><span class="muted">${esc(r[5])}</span>`)).join('')}</div></div>
-    </div>
-    <div class="card"><div class="card-head"><h2>疗程备注</h2></div><div class="rows">
-      ${p.rt.rows.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, esc(r[6]))).join('')}
-    </div></div>
-    <div class="card"><div class="card-head"><h2>分次记录（${p.cycles.filter(c => c[0].startsWith('后装')).length} 次后装）</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>分次</th><th>日期</th><th>说明</th><th>状态</th></tr></thead><tbody>
-      ${p.cycles.filter(c => c[0].startsWith('后装')).map(c => `<tr><td>${esc(c[0])}</td><td>${esc(c[1])}</td><td>${esc(c[2])}</td><td>${pill(c[3], 'green')}</td></tr>`).join('')}
-      </tbody></table></div></div>`;
+    return `${pageHead(true)}<div class="card"><div class="card-head"><h2>系统治疗与周期</h2><span class="muted">${p.cycles.length} 条记录</span></div>
+    <div class="table-wrap"><table class="cycle-table"><thead><tr><th>周期</th><th>日期</th><th>方案 / 说明</th><th>状态</th></tr></thead><tbody>
+    ${p.cycles.map(c => `<tr><td>${esc(c[0])}</td><td>${esc(c[1])}</td><td>${esc(c[2])}</td><td>${pill(c[3], c[4] ? 'green' : 'yellow')}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="notice">方案与剂量按医嘱原文抄录；调整或停药由医生决定，工作台不提供建议。</div></div>`;
   }
   return `${pageHead(true)}<div class="card"><div class="card-head"><h2>系统治疗与周期</h2><span class="muted">${p.cycles.length} 条记录</span></div>
     <div class="table-wrap"><table class="cycle-table"><thead><tr><th>周期</th><th>日期</th><th>方案 / 说明</th><th>状态</th></tr></thead><tbody>
@@ -723,117 +701,116 @@ function vTreatment() {
     <div class="notice">方案与剂量按医嘱原文抄录；调整或停药由医生决定，工作台不提供建议。</div></div>`;
 }
 
-/* ---------------- 性与生育 ---------------- */
+/* ---------------- 影像随访 ---------------- */
 function privateGate(what) {
   if (state.privateOpen) return '';
   return `<div class="notice"><b>${esc(what)}默认私密。</b>不进导出、不进看板摘要；点下面的按钮才会在本页展开。</div>
     <div class="actions"><button data-action="toggle-private">${state.privateOpen ? '收起私密内容' : '本人确认，展开查看'}</button></div>`;
 }
-function vFertility() {
-  const p = P(), sub = state.sub.fertility || 0;
+function vImaging() {
+  const p = P(), sub = state.sub.imaging || 0;
   if (sub === 0) {
     return `${pageHead(true)}
-    <div class="notice"><b>生育是记录，不是承诺。</b>这里只存"你说了什么、医生答了什么原文"，不判断还能不能生。</div>
-    ${p.fertility ? `<div class="card"><div class="card-head"><h2>${esc(p.fertility.title)}</h2></div>
-      <div class="rows">${p.fertility.rows.map(r => row(esc(r[0]), `${esc(r[1])}<br><span class="muted">${esc(r[2])}</span>`)).join('')}</div></div>`
-      : emptyBox('还没有生育档案', '如果生育计划对你有意义，在这里记下医生谈过什么。')}
+    <div class="notice"><b>只记报告原文摘录。</b>影像结论以报告为准，工作台不判读片子；模态（X 线 / CT / MRI / ECT / PET-CT）分条记录，不合并。</div>
+    ${p.imaging ? `<div class="card"><div class="card-head"><h2>${esc(p.imaging.title)}</h2>${pill(`${p.imaging.rows.length} 次`, 'violet')}</div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>检查（模态 / 部位）</th><th>报告结论（摘录）</th><th>下一次建议</th></tr></thead><tbody>
+      ${p.imaging.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="actions"><button data-action="add-imaging">记一次影像检查</button><button class="soft" data-action="export-review">整理成就诊清单</button></div>
+      <div class="notice">「下一次建议」是报告或医生写的原话，不是工作台的建议；片子散在各医院，检查时带上报告。</div></div>`
+      : emptyBox('还没有影像记录', '每次影像检查（MRI / CT / 骨扫描 / 胸 CT）按日期逐次记，报告原文摘录进来。')}
     <div class="grid" style="margin-top:14px">
-      <div class="card"><div class="card-head"><h2>保留生育的几种术式</h2></div><div class="rows">
-        ${row('冷刀锥切 / LEEP', '切除部分宫颈，保留子宫体')}
-        ${row('根治性宫颈切除', '切除宫颈与宫旁，保留子宫体')}
-        ${row('卵巢移位', '放疗前把卵巢移出照射野（是否做由医生定）')}
-      </div><div class="notice">这是术式对照，不是"你适合哪种"的建议。</div></div>
-      <div class="card"><div class="card-head"><h2>可以问医生</h2></div><div class="rows">
-        ${row('怀孕的时间窗', '术后多久可以开始尝试，需要先做哪些评估')}
-        ${row('产科怎么配合', '将来怀孕是否按高危妊娠管理、在哪家医院产检')}
-      </div><div class="actions"><button data-action="add-question">加入复诊清单</button></div></div>
+      <div class="card"><div class="card-head"><h2>骨癌随访常做的影像</h2></div><div class="rows">
+        ${row('局部 X 线 / MRI', '看原发部位与假体（如有）')}
+        ${row('胸部 CT', '骨肉瘤随访的重点项目（医生安排口径）')}
+        ${row('骨扫描 / PET-CT', '按医生安排，不是每次都做')}
+      </div><div class="notice">这段是常见项目说明，不是你的检查安排；查什么、多久查一次以医生为准。</div></div>
+      <div class="card"><div class="card-head"><h2>就诊时怎么展示</h2></div><div class="rows">
+        ${row('按时间倒序', '最近一次在最上面，医生一眼看到变化')}
+        ${row('带上原始报告或光盘', '结论以报告为准；照片翻拍只作过渡')}
+      </div><div class="actions"><button data-action="go-records">上传报告原件 →</button></div></div>
     </div>`;
   }
   if (sub === 1) {
-    if (!p.fertSurgery) {
-      return `${pageHead(true)}${emptyBox('没有生育保留手术记录', '这个档案没有做保留生育的术式；如做过锥切或根治性宫颈切除，在这里记术式与医生写的随访要求。')}`;
-    }
+    const imgDocs = DOCS[state.profile].filter(d => d.type === '影像报告');
     return `${pageHead(true)}
-    <div class="card"><div class="card-head"><h2>${esc(p.fertSurgery.title)}</h2>${pill('含随访要求原文', 'violet')}</div>
-      <div class="rows">${p.fertSurgery.rows.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, `${esc(r[2])}<br><span class="muted">${esc(r[3])}</span>`)).join('')}</div></div>
-    <div class="card"><div class="card-head"><h2>随访要求（医生原话，不改写）</h2></div>
-      <div class="rows">${p.fertSurgery.rows.map(r => row('原文', esc(r[4]))).join('')}</div>
-      <div class="notice">具体日期以门诊预约为准；工作台不把"每 3 个月"换算成提醒时间。</div></div>`;
+    <div class="toolbar">
+      <input type="search" placeholder="搜索文件名或类型" data-action="records-search" value="${esc(state.query)}" aria-label="搜索影像报告">
+      <button data-action="pick-file">上传报告</button>
+      <button data-action="load-report">${state.parsing ? '正在解析…' : '载入一份模拟报告'}</button>
+    </div>
+    <input type="file" id="file-picker" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.txt,.md">
+    <div class="card"><div class="card-head"><h2>影像报告（${imgDocs.length} 份）</h2><span class="muted">原件不改动</span></div><div id="docs-table">${docsTable()}</div></div>
+    <div class="notice">解析结果永远是候选，核对后才入档；扫描件与照片的自动识别需要 MinerU（本演示未接入）。</div>`;
   }
-  if (sub === 2) {
-    return `${pageHead(true)}
-    ${p.ovary ? `<div class="card"><div class="card-head"><h2>${esc(p.ovary.title)}</h2></div>
-      <div class="rows">${p.ovary.rows.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, `${esc(r[2])}${r[3] ? '<br><span class="muted">' + esc(r[3]) + '</span>' : ''}`)).join('')}</div></div>`
-      : emptyBox('没有卵巢功能记录', '化疗或放疗前后查过 FSH / AMH 的话，在这里记数值与医生结论。')}
-    <div class="card"><div class="card-head"><h2>月经情况</h2><span class="muted">本人记录，不是医生评估</span></div>
-      <div class="rows">${(M().menses ? M().menses.points.slice().reverse() : []).map(pt => row(esc(pt.d), esc(pt.v))).join('') || '<p class="muted" style="padding:12px">未记录。</p>'}</div>
-      <div class="actions"><button data-action="add-fertility">记一次月经情况</button></div></div>`;
-  }
-  const rows = p.sexual ? p.sexual.rows : [];
+  const rows = p.imaging ? p.imaging.rows : [];
   return `${pageHead(true)}
-  ${privateGate('性健康记录')}
-  ${state.privateOpen ? `<div class="card private"><div class="card-head"><h2>${esc(p.sexual.title)}</h2>${pill('私密 · 不进导出', 'grey')}</div>
-    <div class="rows">${rows.length ? rows.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, esc(r[2]))).join('') : '<p class="muted" style="padding:12px">还没有记录。</p>'}</div>
-    <div class="notice">这里的内容不会被复制进"与 Agent 讨论"的上下文草稿，也不会出现在导出里。</div>
-    <div class="actions"><button data-action="toggle-private">收起</button></div></div>`
-    : `<div class="card"><div class="card-head"><h2>这一页记什么</h2></div><div class="rows">
-      ${row('性交痛 / 干涩 / 出血', '按发生时间和自述记，不用判断原因')}
-      ${row('顾虑', '比如"是不是以后都这样"，可以只写一句')}
-      ${row('问医生的问题', '这类问题门诊常常问不出口，写下来递过去也行')}
-    </div><div class="notice">是否记录、是否给医生看，都由你决定；工作台永远允许"完全跳过不填"。</div></div>`}`;
+  <div class="card"><div class="card-head"><h2>复查间隔（按记录推导，不换算提醒）</h2><span class="muted">「下一次」以医生安排为准</span></div>
+    <div class="rows">${rows.length ? rows.slice().reverse().map(r => row(`${esc(r[1])} · ${esc(r[0])}`, `${esc(r[2])}${r[3] && r[3] !== '—' ? ` · 下一次：${esc(r[3])}` : ''}`)).join('') : '<p class="muted" style="padding:12px">还没有影像记录。</p>'}</div>
+    <div class="notice">工作台不把「每 3 个月」换算成提醒时间；预约以门诊为准。</div></div>`;
 }
 
-/* ---------------- 放疗与长期影响 ---------------- */
-function vLate() {
-  const p = P(), sub = state.sub.late || 0;
+/* ---------------- 功能与随访 ---------------- */
+function vFunction() {
+  const p = P(), sub = state.sub.function || 0;
   if (sub === 0) {
-    if (!p.lateEffects) return `${pageHead(true)}${emptyBox('没有放疗后事件记录', '这个档案未做放疗。')}`;
     return `${pageHead(true)}
-    <div class="notice">分级抄医生记录的原话（如"1 级"）；没有分级就写"未分级"，<b>工作台不自己补分级</b>。</div>
-    <div class="card"><div class="card-head"><h2>${esc(p.lateEffects.title)}</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>系统</th><th>医生记录的分级</th><th>当时情况</th></tr></thead><tbody>
-      ${p.lateEffects.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2] || '未分级')}</td><td>${esc(r[3])}</td></tr>`).join('')}
+    <div class="notice"><b>功能自评是本人记录，不是医生评估。</b>MSTS 评分由医生在门诊评，本台不自动打分、不给评级建议。</div>
+    ${p.functSelf ? `<div class="card"><div class="card-head"><h2>${esc(p.functSelf.title)}</h2></div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>条目</th><th>本人的记录</th></tr></thead><tbody>
+      ${p.functSelf.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}
       </tbody></table></div>
-      <div class="actions"><button data-action="add-late">记一条今天的情况</button></div></div>
+      <div class="actions"><button data-action="add-function">记一条今天的功能自评</button></div>
+      <div class="notice">行走情况与疲劳自评也进了「病情一图秀」的分类节点，只画点不连线。</div></div>`
+      : emptyBox('还没有功能自评记录', '术后恢复期间，把每天能做的一件事记下来（抬臂、行走、提重物都可以），下次门诊直接给医生看。')}
     <div class="grid" style="margin-top:14px">
-      <div class="card"><div class="card-head"><h2>什么时候该联系门诊</h2></div><div class="rows">
-        ${row('腹泻带血或发热', '按医生给的联系方式问，不要等下次门诊')}
-        ${row('尿痛伴发热', '同上')}
-        ${row('单侧腿突然肿起来', '先联系门诊，不要自行按摩或热敷')}
-      </div><div class="notice">这里是"什么情况该找人"，不是自我处理方案。</div></div>
+      <div class="card"><div class="card-head"><h2>可以记什么</h2></div><div class="rows">
+        ${row('抬臂 / 梳头 / 穿衣', '保肢术后上肢功能的小事，都是恢复的痕迹')}
+        ${row('行走与辅助器具', '需不需要拐杖、能走多远，按当天实际写')}
+        ${row('想问医生的问题', '「正常吗」这类问题写下来，当面问')}
+      </div><div class="notice">只记事实与自述；不给训练计划，也不推康复产品。</div></div>
       <div class="card"><div class="card-head"><h2>就诊时怎么展示</h2></div><div class="rows">
-        ${row('按时间倒序', '最近一次在最上面，医生一眼看到变化')}
-        ${row('带上原始报告', '分级与结论以报告为准')}
+        ${row('按时间倒序', '最近一条在最上面')}
+        ${row('与医生评分分开', 'MSTS 等评分以门诊记录为准，本台只放本人自述')}
       </div><div class="actions"><button data-action="export-review">整理成就诊清单</button></div></div>
     </div>`;
   }
   if (sub === 1) {
-    if (!p.lymphedema) return `${pageHead(true)}${emptyBox('没有淋巴水肿记录', '如果出现腿肿，在这里按日期与测量部位记周径差。')}`;
+    if (!p.prosthesis) return `${pageHead(true)}${emptyBox('没有假体与重建随访记录', '做了重建手术（假体 / 自体骨）后，每次影像复查的结果在这里记一条。')}`;
     return `${pageHead(true)}
-    <div class="notice">按测量部位记周径差；压力袜的压力值以处方为准，工作台不推荐型号。</div>
-    <div class="card"><div class="card-head"><h2>${esc(p.lymphedema.title)}</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>部位</th><th>医生分期</th><th>测量</th><th>备注</th></tr></thead><tbody>
-      ${p.lymphedema.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2] || '—')}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td></tr>`).join('')}
-      </tbody></table></div></div>`;
+    <div class="notice">只记「置入 / 复查」两条线；假体状态由医生评估，本台只抄报告原文摘录。</div>
+    <div class="card"><div class="card-head"><h2>${esc(p.prosthesis.title)}</h2></div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>项目</th><th>结果（摘录）</th><th>机构</th></tr></thead><tbody>
+      ${p.prosthesis.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3] || '—')}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="actions"><button data-action="go-imaging">看影像记录 →</button></div></div>`;
   }
   if (sub === 2) {
-    if (!p.vagina) return `${pageHead(true)}${emptyBox('没有阴道扩张记录', '这个档案未做放疗。')}`;
-    const pub = p.vagina.rows.filter(r => r[4]);
-    const open = p.vagina.rows.filter(r => !r[4]);
-    return `${pageHead(true)}
-    <div class="card"><div class="card-head"><h2>医嘱与狭窄程度</h2><span class="muted">不含本人自述</span></div>
-      <div class="rows">${open.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, `${esc(r[2])}<br><span class="muted">${esc(r[3])}</span>`)).join('')}</div></div>
-    ${privateGate('扩张训练记录')}
-    ${state.privateOpen ? `<div class="card private"><div class="card-head"><h2>扩张训练记录</h2>${pill('私密 · 不进导出', 'grey')}</div>
-      <div class="rows">${pub.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, `${esc(r[2])}<br><span class="muted">${esc(r[3])}</span>`)).join('')}</div>
-      <div class="actions"><button data-action="toggle-private">收起</button></div></div>` : ''}`;
+    return `${pageHead(true)}<div class="card"><div class="card-head"><h2>随访节律（医生安排）</h2></div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>项目</th><th>频率</th><th>依据</th><th>下一次</th></tr></thead><tbody>
+      ${p.rhythm.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="notice">「下一次」是估算的门诊时间，以实际预约为准；工作台不换算提醒。</div></div>
+    <div class="card"><div class="card-head"><h2>${esc(p.helpPlan ? p.helpPlan.title : '什么时候该联系门诊')}</h2></div><div class="rows">
+      ${(p.helpPlan ? p.helpPlan.rows : []).map(r => row(esc(r[0]), esc(r[1]))).join('')}
+    </div><div class="notice">这里是医生给的「什么情况该找人」，不是自我处理方案。</div></div>
+    <div class="card"><div class="card-head"><h2>就诊准备</h2></div><div class="rows">
+      ${row('带什么', '病理报告 · 最近影像报告 · 用药清单 · 这份清单')}
+      ${row('最近的变化', p.functSelf ? `${p.functSelf.rows[0][1]}：${p.functSelf.rows[0][2]}（本人记录）` : '按实际记')}
+    </div><div class="actions"><button data-action="export-review">整理成 Markdown</button></div></div>`;
   }
+  const pts = p.viewpoints;
   return `${pageHead(true)}
-  ${p.menopause ? `<div class="card"><div class="card-head"><h2>${esc(p.menopause.title)}</h2><span class="muted">症状表</span></div>
-    <div class="rows">${p.menopause.rows.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, `${esc(r[2])}${r[3] ? ' · ' + esc(r[3]) : ''}`)).join('')}</div></div>` : emptyBox('没有绝经症状记录', '治疗诱导绝经的潮热、盗汗、失眠可以按日期记。')}
-  <div class="card"><div class="card-head"><h2>用药与骨健康医嘱</h2><span class="muted">与症状表分开两列，不合并</span></div>
-    <div class="rows">${(p.hormone || []).map(r => row(`${esc(r[0])}`, `${esc(r[1])}<br><span class="muted">${esc(r[2])} → ${esc(r[3] || '至今')} · ${esc(r[4])}</span>`)).join('') || '<p class="muted" style="padding:12px">暂无医嘱记录。</p>'}</div>
-    <div class="notice">激素替代是否适用、用哪种，由医生结合病情判断；这里只留医嘱原文。</div></div>`;
+  ${privateGate('感受记录')}
+  ${state.privateOpen ? `<div class="card private"><div class="card-head"><h2>我记下的感受</h2>${pill('私密 · 不进导出', 'grey')}</div>
+    <div class="rows">${pts.length ? pts.slice().reverse().map(v => row(`${esc(v[0])} · ${esc(v[1])}`, esc(v[2]))).join('') : '<p class="muted" style="padding:12px">还没有记录。</p>'}</div>
+    <div class="actions"><button data-action="add-viewpoint">记一条</button><button data-action="toggle-private">收起</button></div>
+    <div class="notice">这里的内容不会被复制进「与 Agent 讨论」的上下文草稿，也不会出现在导出里。</div></div>`
+    : `<div class="card"><div class="card-head"><h2>这一页记什么</h2></div><div class="rows">
+      ${row('对身体的感受', '比如「不想照镜子」「觉得不是自己了」，按自述写')}
+      ${row('和家人的沟通', '约定、顾虑、不想说的话题，都可以只写一句')}
+      ${row('复查前的紧张', '很多人都有；提前把想问的写下来能减少慌乱')}
+    </div><div class="notice">是否记录、是否给医生看，都由你决定；工作台永远允许「完全跳过不填」。</div></div>`}`;
 }
 
 /* ---------------- 检查与指标 ---------------- */
@@ -849,26 +826,29 @@ function vLabs() {
   const p = P(), sub = state.sub.labs || 0;
   if (sub === 0) {
     return `${pageHead(true)}
-    <div class="notice">${esc(p.histology)}档案：${p.histology === '鳞癌' ? 'SCC-Ag 是主线指标；CEA 对鳞癌不特异，本档案不登记' : '腺癌不看 SCC-Ag，用 CEA / CA125'}；单次波动不等于病情变化。</div>
+    <div class="notice">ALP / LDH 是骨癌随访的常用化验；单次波动不等于病情变化，不同方法、不同机构不合并比较。</div>
     ${metricSections(CAT_ORDER)}`;
   }
   if (sub === 1) {
+    const labDocs = DOCS[state.profile].filter(d => d.type === '化验单');
     return `${pageHead(true)}
-    <div class="notice"><b>只存报告原文。</b>界面不出现"正常 / 异常"的重判读；缩写（NILM、ASC-US…）照抄。</div>
-    ${p.cytology ? `<div class="card"><div class="card-head"><h2>${esc(p.cytology.title)}</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>方法</th><th>报告原文</th><th>备注</th></tr></thead><tbody>
-      ${p.cytology.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}
-      </tbody></table></div></div>` : emptyBox('没有细胞学记录', '阴道残端细胞学按报告原文记。')}
-    ${p.hpv ? `<div class="card"><div class="card-head"><h2>${esc(p.hpv.title)}</h2></div>
-      <div class="rows">${p.hpv.rows.map(r => row(`${esc(r[0])} · ${esc(r[1])}`, `${esc(r[2])}<br><span class="muted">${esc(r[3])}</span>`)).join('')}</div></div>` : ''}
-    <div class="card"><div class="card-head"><h2>这两项怎么看</h2></div>
-      <div class="rows">${row('细胞学', '看报告上的描述与建议，随访间隔按医生安排')}${row('HPV', '型别与载量以报告为准；阳性不等于复发')}</div>
-      <div class="notice">"阳性 / 阴性"的判断以报告结论为准，工作台不替你解读。</div></div>`;
+    <div class="notice"><b>化验单按「来源」一列展示。</b>同一份单子上的指标在「分类指标」里各成一卡；出处可回查。</div>
+    ${labDocs.length ? `<div class="card"><div class="card-head"><h2>化验单（${labDocs.length} 份）</h2></div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>文件</th><th>日期</th><th>状态</th><th></th></tr></thead><tbody>
+      ${labDocs.map(d => `<tr><td>${esc(d.name)}</td><td>${esc(d.date)}</td><td>${pill(d.status, DOC_PILL[d.status] || 'grey')}</td><td><button class="text-button" data-action="source" data-doc="${esc(d.id)}">原文出处</button></td></tr>`).join('')}
+      </tbody></table></div></div>`
+      : emptyBox('还没有化验单', '化验单拍照或 PDF 上传到「资料库」，类型选「化验单」，会出现在这里。')}
+    <div class="card"><div class="card-head"><h2>最近报告表</h2></div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>指标</th><th>最近值</th><th>日期</th><th>来源</th></tr></thead><tbody>
+      ${Object.values(M()).map(m => { const l = m.points[m.points.length - 1]; return `<tr><td>${esc(m.name)}</td><td>${esc(String(l.v))}${m.unit ? ' ' + esc(m.unit) : ''}</td><td>${esc(l.d)}</td><td>${esc(l.src || '—')}</td></tr>`; }).join('')}
+      </tbody></table></div></div>`;
   }
-  return `${pageHead(true)}${p.imaging ? `<div class="card"><div class="card-head"><h2>${esc(p.imaging.title)}</h2></div>
-    <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>检查</th><th>报告结论（摘录）</th><th>下一次建议</th></tr></thead><tbody>
-    ${p.imaging.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}
-    </tbody></table></div><div class="notice">结论摘录自报告；"下一次建议"是报告或医生写的原话，不是工作台的建议。</div></div>` : emptyBox('没有影像记录', '盆腔 MRI / CT / PET-CT 按日期逐次记。')}`;
+  return `${pageHead(true)}<div class="card"><div class="card-head"><h2>口径说明</h2></div><div class="rows">
+    ${row('ALP（碱性磷酸酶）', '骨与肝来源都有；单次升降不等于病情变化，趋势由医生看')}
+    ${row('LDH（乳酸脱氢酶）', '评估时查；不同方法/机构不合并')}
+    ${row('血钙', '骨溶解相关；单次结果不判断')}
+    ${row('参考区间', '区间因年龄、性别、方法与机构而异；卡片上写的区间是演示值，不构成判定')}
+  </div><div class="notice">「仅回顾，不解读」：解读归医生。</div></div>`;
 }
 
 /* ---------------- 一图秀 ---------------- */
@@ -884,9 +864,9 @@ function vTimeline() {
   if (sub === 2) {
     return `${pageHead(true)}<div class="card"><div class="card-head"><h2>数据口径</h2></div><div class="rows">
       ${row('归一化', '每条数值线按自己的最小值–最大值铺满画布，所以"线的高低"不能跨指标比较')}
-      ${row('分类序列', '阴道狭窄、淋巴水肿、腹泻分级只画节点、不连线；档位顺序是固定的严重度顺序')}
+      ${row('分类序列', '行走情况、疲劳自评只画节点、不连线；档位顺序是固定的自述档位顺序')}
       ${row('单点', '只有 1 次记录的指标不连线，只画一个点')}
-      ${row('治疗条', '周期带来自系统治疗记录；竖虚线是确诊 / 手术 / 分期这类评估节点')}
+      ${row('治疗条', '周期带来自化疗周期记录；竖虚线是确诊 / 手术 / 分期这类评估节点')}
       ${row('数据来源', '演示数据由 demo/build-demo-data.mjs 生成，与 demo-data.sqlite 同源')}
     </div></div>`;
   }
@@ -912,109 +892,6 @@ function vTimeline() {
   </div>`;
 }
 
-/* ---------------- 营养 / 心理 / 复诊 ---------------- */
-function vNutrition() {
-  const p = P(), sub = state.sub.nutrition || 0;
-  if (sub === 0) {
-    return `${pageHead(true)}${p.nutrition ? `<div class="card"><div class="card-head"><h2>${esc(p.nutrition.title)}</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>日期</th><th>餐次</th><th>份量</th><th>吃了什么</th><th>症状</th></tr></thead><tbody>
-      ${p.nutrition.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td></tr>`).join('')}
-      </tbody></table></div><div class="actions"><button data-action="add-meal">记一笔今天的进食</button></div>
-      <div class="notice">份量按自述，不做热量换算；不给食谱。</div></div>` : emptyBox('没有进食记录', '放化疗期间吃得少是常见的事，记下来比凭记忆说更准。')}`;
-  }
-  return `${pageHead(true)}<div class="card"><div class="card-head"><h2>补充剂与医嘱</h2></div>
-    <div class="rows">${(p.supplements || []).map(r => row(esc(r[0]), `${esc(r[1])}<br><span class="muted">${esc(r[2])} → ${esc(r[3] || '至今')} · ${esc(r[4])}</span>`)).join('') || '<p class="muted" style="padding:12px">暂无医嘱记录。</p>'}</div>
-    <div class="notice">只留医嘱原文与起止；剂量调整请按医嘱。</div></div>`;
-}
-
-function vMind() {
-  const p = P(), sub = state.sub.mind || 0;
-  if (sub === 0) {
-    return `${pageHead(true)}
-    <div class="notice">这一页的内容<b>默认只属于你</b>；整理成上下文时会跳过具体感受原文。</div>
-    <div class="card"><div class="card-head"><h2>我记下的感受</h2><span class="muted">不是医生结论</span></div>
-      <div class="rows">${p.viewpoints.slice().reverse().map(v => row(`${esc(v[0])} · ${esc(v[1])}`, esc(v[2]))).join('')}</div>
-      <div class="actions"><button data-action="add-viewpoint">记一条今天的感受</button></div></div>
-    <div class="grid" style="margin-top:14px">
-      <div class="card"><div class="card-head"><h2>常见的几种反应</h2></div><div class="rows">
-        ${row('治疗结束后更累', '很多人都有，但持续加重值得跟医生说')}
-        ${row('复查前一周紧张', '可以提前把想问的写下来，减少在诊室的慌乱')}
-        ${row('不想解释', '可以只告诉家人"今天不想聊"，不需要理由')}
-      </div></div>
-      <div class="card"><div class="card-head"><h2>想找人说话时</h2></div><div class="rows">
-        ${row('门诊心理支持', '问主诊医生能不能转介')}
-        ${row('病友群', '只听不说是可以的')}
-      </div><div class="notice">工作台不推荐具体机构或咨询师。</div></div>
-    </div>`;
-  }
-  if (sub === 1) {
-    return `${pageHead(true)}
-    <div class="notice">身体形象与亲密关系的问题很具体，也很少有人说出口；这里只提供记录位。</div>
-    <div class="card"><div class="card-head"><h2>可以记什么</h2></div><div class="rows">
-      ${row('对身体的感受', '比如"不想照镜子""觉得不是自己了"')}
-      ${row('和伴侣的距离', '回避、争吵、或者反而更亲近，都可以写')}
-      ${row('想问但没问的', '写下来，下次门诊递过去也行')}
-    </div><div class="actions"><button data-action="add-viewpoint">记一条</button><button class="soft" data-action="go-fertility">性健康（私密）→</button></div></div>`;
-  }
-  return `${pageHead(true)}
-  <div class="card"><div class="card-head"><h2>母亲身份与家庭沟通</h2></div>
-    <div class="rows">${row('我和家人的约定', esc(p.familyTalk))}${row('孩子知道多少', '按年龄决定说到哪一步，是很多家庭的实际做法')}${row('不想让孩子知道的', '可以不写；写了也不会进导出')}</div>
-    <div class="actions"><button data-action="add-viewpoint">记一条</button></div></div>
-  <div class="card"><div class="card-head"><h2>可以这样开口</h2></div><div class="rows">
-    ${row('对孩子', '"妈妈在治一个病，会累一点，但不是你的错"')}
-    ${row('对伴侣', '"我现在不想谈这个，等我想说的时候会告诉你"')}
-    ${row('对父母', '"检查结果我知道后会告诉你们，不用一直问"')}
-  </div><div class="notice">这些是句式参考，不是"应该怎么说"的标准答案。</div></div>`;
-}
-
-function vReview() {
-  const p = P(), sub = state.sub.review || 0;
-  if (sub === 0) {
-    return `${pageHead(true)}<div class="card"><div class="card-head"><h2>复诊节奏（医生安排）</h2></div>
-      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>项目</th><th>频率</th><th>依据</th><th>下一次</th></tr></thead><tbody>
-      ${p.rhythm.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}
-      </tbody></table></div>
-      <div class="notice">"下一次"是估算的门诊时间，以实际预约为准。</div></div>
-    <div class="card"><div class="card-head"><h2>最近一次就诊带了什么</h2></div><div class="rows">
-      ${row('带了', '病理报告、最近一次影像报告、用药清单')}
-      ${row('没带但下次要带', '激素与细胞学报告原件')}
-    </div></div>`;
-  }
-  if (sub === 1) {
-    const cy = p.cytology ? p.cytology.rows[0] : null;
-    const hp = p.hpv ? p.hpv.rows[0] : null;
-    const im = p.imaging ? p.imaging.rows[0] : null;
-    return `${pageHead(true)}
-    <div class="notice">三类随访节点并排看：细胞学、HPV、影像；各自的下一次时间以医生安排为准。</div>
-    <div class="grid">
-      <div class="card"><div class="card-head"><h2>细胞学</h2></div><div class="rows">${cy ? row(esc(cy[0]), esc(cy[2])) : row('—', '未记录')}</div></div>
-      <div class="card"><div class="card-head"><h2>HPV</h2></div><div class="rows">${hp ? row(esc(hp[0]), esc(hp[2])) : row('—', '未记录')}</div></div>
-      <div class="card"><div class="card-head"><h2>影像</h2></div><div class="rows">${im ? row(`${esc(im[0])} · ${esc(im[1])}`, `${esc(im[2])}<br><span class="muted">下一次：${esc(im[3])}</span>`) : row('—', '未记录')}</div></div>
-    </div>
-    <div class="card"><div class="card-head"><h2>时间线</h2></div><div class="rows">
-      ${p.rhythm.filter(r => /细胞学|HPV|MRI|CT|影像/.test(r[0])).map(r => row(esc(r[0]), `${esc(r[1])} · 下一次 ${esc(r[3])}`)).join('')}
-    </div></div>`;
-  }
-  if (sub === 2) {
-    if (!p.screening) return `${pageHead(true)}${emptyBox('没有筛查档案', '本人筛查史、疫苗记录可以记在这里。')}`;
-    const byKind = ['本人筛查史', '疫苗记录', '家属可讨论问题'].map(k => {
-      const rows = p.screening.rows.filter(r => r[0] === k);
-      return rows.length ? `<div class="card"><div class="card-head"><h2>${esc(k)}</h2></div><div class="rows">${rows.map(r => row(esc(r[1]), `${esc(r[2])}${r[3] ? ' · ' + esc(r[3]) : ''}`)).join('')}</div></div>` : '';
-    }).join('');
-    return `${pageHead(true)}<div class="notice">这一页只放<b>本人档案与"可以问的问题"</b>；不给疫苗接种建议，也不给家属做筛查建议。</div>${byKind}`;
-  }
-  const qs = state.questions || [];
-  return `${pageHead(true)}
-  <div class="card"><div class="card-head"><h2>就诊准备</h2><span class="muted">打印或手机备忘都行</span></div>
-    <div class="rows">
-      ${row('最想问的一条', p.mindset)}
-      ${row('带什么', '病理报告 · 最近影像 · 用药清单 · 这份清单')}
-      ${row('最近的变化', `${p.lateEffects ? p.lateEffects.rows[0][1] + '：' + p.lateEffects.rows[0][3] : '按实际记'}`)}
-    </div><div class="actions"><button data-action="export-review">整理成 Markdown</button><button class="soft" data-action="add-question">加一个问题</button></div></div>
-  <div class="card"><div class="card-head"><h2>我的问题清单（${qs.length}）</h2></div>
-    <div class="rows">${qs.length ? qs.map(q => row(esc(q), '', `<button class="soft" data-action="toggle-ask">标记已问</button>`)).join('') : '<p class="muted" style="padding:12px">还没有问题；上面点"加一个问题"会放一条示例。</p>'}</div></div>`;
-}
-
 /* ---------------- 临床研究 ---------------- */
 function vTrials() {
   const sub = state.sub.trials || 0;
@@ -1030,7 +907,7 @@ function vTrials() {
     return `${pageHead(true)}
     <div class="notice">登记状态 ≠ 入组资格；下面这些问题拿去问研究中心，比在网上找答案可靠。</div>
     <div class="card"><div class="card-head"><h2>通用入组问题</h2></div><div class="rows">
-      ${row('我的分期和既往治疗符合吗', '带上 FIGO 分期、病理类型、既往方案与结束日期')}
+      ${row('我的分期和既往治疗符合吗', '带上外科分期、病理类型、既往方案与结束日期')}
       ${row('需要重新做检查吗', '有些试验要求本院影像或病理复核')}
       ${row('对照臂是什么', '随机对照试验要问清楚"如果分到对照组"用什么')}
       ${row('来回路程与随访频率', '能不能配合，直接决定要不要报名')}
@@ -1041,8 +918,8 @@ function vTrials() {
   const topics = ['全部', ...Array.from(new Set(TRIALS.map(t => t.topic)))];
   const list = TRIALS.filter(t => state.trialTopic === '全部' || t.topic === state.trialTopic);
   return `${pageHead(true)}
-  <div class="notice">线索不是推荐：登记信息可能滞后，<b>状态与入排标准以研究中心为准</b>。数据来源 ClinicalTrials.gov，
-    采集窗口 2026-01-01 → 2026-10-21（首次公示），最后核对 2026-10-21。</div>
+  <div class="notice">线索不是推荐：登记信息可能滞后，<b>状态与入排标准以研究中心为准</b>。数据来源 ClinicalTrials.gov（API v2，status=RECRUITING），
+    采集窗口 2026-11-10 实测，状态未核实以登记页为准；中国登记平台（ChiCTR / 药物临床试验登记平台）本轮未采集，覆盖未知。</div>
   <div class="chips" role="group" aria-label="按关注点筛选">
     ${topics.map(t => `<button class="chip${state.trialTopic === t ? ' on' : ''}" data-topic="${esc(t)}">${esc(t)}</button>`).join('')}
   </div>
@@ -1056,53 +933,49 @@ function vTrials() {
   </div>`).join('')}</div>`;
 }
 
-const VIEWS = { dashboard: vDashboard, records: vRecords, stage: vStage, treatment: vTreatment, fertility: vFertility, late: vLate, labs: vLabs, timeline: vTimeline, nutrition: vNutrition, mind: vMind, review: vReview, trials: vTrials };
+const VIEWS = { dashboard: vDashboard, records: vRecords, imaging: vImaging, stage: vStage, treatment: vTreatment, function: vFunction, labs: vLabs, timeline: vTimeline, trials: vTrials };
 
 /* ---------------- agent dock（dsh 原生会话挂载位） ---------------- */
 /* 越界词自检清单：下面是"要被拦住的词表"本身，不是给用户看的文案。 */
 const FORBIDDEN = ['建议治疗', '可能复发', '预后良好', '治愈率', '可以停药', '无需就医', '推荐方案', '生存率']; // wording-allow
 const PAGE_CONTEXT = {
   dashboard: () => ({ facts: [`${P().name}：${P().headline}`,
-    `FIGO 分期：${P().stage}（医生给出）`,
-    P().lateEffects ? `最近一次放疗后事件：${P().lateEffects.rows[0][1]} ${P().lateEffects.rows[0][2]}（${P().lateEffects.rows[0][0]}）` : '暂无放疗后事件',
-    P().lymphedema ? `最近一次腿围记录：${P().lymphedema.rows[0][3]}（${P().lymphedema.rows[0][0]}）` : '暂无腿围记录'],
-    missing: ['下次复查的具体日期', '最近的进食量记录'] }),
+    `外科分期：${P().stage}（医生给出）`,
+    P().imaging ? `最近一次影像：${P().imaging.rows[P().imaging.rows.length - 1][1]}（${P().imaging.rows[P().imaging.rows.length - 1][0]}）` : '暂无影像记录',
+    P().functSelf ? `最近一次功能自评：${P().functSelf.rows[0][1]} ${P().functSelf.rows[0][2]}（${P().functSelf.rows[0][0]}）` : '暂无功能自评记录'],
+    missing: ['下次复查的具体日期', '最近一次随访的医生原话'] }),
   records: () => ({ facts: [`资料库 ${DOCS[state.profile].length} 份；待核对候选 ${CANDS[state.profile].filter(c => c.status !== 'accepted').length} 条`], missing: [] }),
-  stage: () => ({ facts: [`FIGO 2018：${P().stage}`, ...(P().figo ? P().figo.rows.map(r => `${r[0]}：${r[1]}`) : []),
+  imaging: () => ({ facts: [...(P().imaging ? P().imaging.rows.slice(0, 5).map(r => `${r[0]} ${r[1]}：${r[2]}`) : [])],
+    missing: [P().imaging ? '最近一次影像的医生当面解读' : '首次影像安排'] }),
+  stage: () => ({ facts: [`${P().stage}`, ...(P().staging ? P().staging.rows.map(r => `${r[0]}：${r[1]}`) : []),
     ...P().molecular.map(x => `${x.k}：${x.v}（${x.src}）`)],
     missing: P().molecular.filter(x => x.state === 'na').map(x => `${x.k} 检测状态`) }),
   /* facts 必须是数组字面量：多来源一律用 spread 展开，不能"先 map 再 spread"（曾导致 `Unexpected token ']'`）。 */
   treatment: () => ({ facts: [...(P().pathway ? P().pathway.rows.map(r => `${r[0]}路径：${r[1]}（${r[2]}）`) : []),
-    ...(P().rt ? P().rt.rows.map(r => `${r[0]}：${r[3]}（${r[1]} → ${r[2]}）`) : [])], missing: ['下次评估的具体结论'] }),
-  /* 私密模块不进上下文草稿：只写"有几条记录被本人设为私密"，不带原文（A4）。 */
-  fertility: () => ({ facts: [...(P().fertility ? P().fertility.rows.map(r => `${r[0]}：${r[1]}`) : []),
-    ...(P().fertSurgery ? P().fertSurgery.rows.map(r => `生育保留术式：${r[1]}`) : []),
-    `性健康记录：${(P().sexual ? P().sexual.rows.length : 0)} 条（默认私密，不进入草稿）`],
-    missing: ['卵巢功能与月经的下一次复查安排'] }),
-  late: () => ({ facts: [...(P().lateEffects ? P().lateEffects.rows.map(r => `${r[0]} ${r[1]}：${r[2] || '未分级'}，${r[3]}`) : []),
-    ...(P().lymphedema ? P().lymphedema.rows.map(r => `${r[0]} 腿围：${r[3]}`) : []),
-    `阴道扩张训练记录：${(P().vagina ? P().vagina.rows.filter(r => r[4]).length : 0)} 条（私密，不进入草稿）`],
-    missing: ['最近一次门诊对这些情况的原话'] }),
-  labs: () => ({ facts: Object.values(M()).filter(m => m.points && m.points.length).map(m => `${m.name} 最近：${String(m.points.slice(-1)[0].v)}（${m.points.slice(-1)[0].d}）`),
-    missing: [M().scc ? 'SCC-Ag 与影像的对照结论' : 'CEA 与影像的对照结论'] }),
+    ...(P().surgery ? P().surgery.rows.map(r => `手术：${r[1]}，${r[3]}（${r[0]}）`) : []),
+    ...(P().cycles.length ? [`化疗周期共 ${P().cycles.length} 条，方案按医嘱原文摘录`] : [])], missing: ['下次评估的具体结论'] }),
+  /* 私密模块不进上下文草稿：只写"有几条记录被本人设为私密"，不带原文。 */
+  function: () => ({ facts: [...(P().functSelf ? P().functSelf.rows.slice(0, 3).map(r => `${r[0]} ${r[1]}：${r[2]}（本人记录）`) : []),
+    ...(P().prosthesis ? P().prosthesis.rows.map(r => `${r[0]} ${r[1]}：${r[2]}`) : []),
+    ...P().rhythm.map(r => `${r[0]}：${r[1]}（${r[2]}）`),
+    `感受记录：${P().viewpoints.length} 条（默认私密，不进入草稿）`],
+    missing: ['最近一次门诊对功能恢复的原话'] }),
+  labs: () => ({ facts: Object.values(M()).filter(m => m.points && m.points.length).map(m => `${m.name} 最近：${String(m.points.slice(-1)[0].v)}${m.unit ? ' ' + m.unit : ''}（${m.points.slice(-1)[0].d}）`),
+    missing: ['ALP 与影像的对照结论'] }),
   timeline: () => ({ facts: ['一图秀当前勾选：' + state.sel.map(k => M()[k].name).join('、')], missing: [] }),
-  nutrition: () => ({ facts: [...(P().nutrition ? P().nutrition.rows.slice(0, 3).map(r => `${r[0]} ${r[1]}：${r[2]}，${r[3]}，症状：${r[4]}`) : [])],
-    missing: ['营养门诊的下一次安排'] }),
-  mind: () => ({ facts: ['本页内容默认私密，提示词不携带具体感受原文'], missing: [] }),
-  review: () => ({ facts: P().rhythm.map(r => `${r[0]}：${r[1]}（${r[2]}）`), missing: ['想问清单中 1 条待确认'] }),
   trials: () => ({ facts: ['2026 线索共 ' + TRIALS.length + ' 条（真实登记摘录，状态未核实）'], missing: [] })
 };
 
 function buildPrompt() {
   const ctx = PAGE_CONTEXT[state.view]();
   const title = PAGES.find(p => p[0] === state.view)[1];
-  return [`【来自小莲宝工作台 · ${title}页】`, `档案：${P().name}（${P().meta}）——演示数据`, '',
+  return [`【来自小骨宝工作台 · ${title}页】`, `档案：${P().name}（${P().meta}）——演示数据`, '',
     '本页已核对的事实：', ...ctx.facts.map(f => '- ' + f), '',
     '尚未核对 / 待确认：', ...(ctx.missing.length ? ctx.missing.map(f => '- ' + f) : ['- （无）']), '',
     '边界：以上是记录整理，不是医疗建议；请基于原文与医生沟通，不要求工作台外推结论。'].join('\n');
 }
 function mockReply() {
-  return '根据你整理的本页事实：分期与治疗路径都有医生给出的依据，随访节奏也记录在案。你提到的未确认事项（下次影像日期、最近一次门诊原话），适合在下次门诊清单里逐条确认。本回复不构成医疗建议。';
+  return '根据你整理的本页事实：分期、手术与化疗周期都有医生给出的依据，随访节律也记录在案。你提到的未确认事项（下次影像日期、最近一次门诊原话），适合在下次门诊清单里逐条确认。本回复不构成医疗建议。';
 }
 function renderAgent() {
   const dock = $('#agent-dock'), grid = $('#work-grid'), btn = $('#agent-toggle');
@@ -1146,7 +1019,7 @@ function openDialog(eyebrow, title, body, foot = '') {
 const closeDialog = () => $('#dialog').close();
 
 function dlgProfiles() {
-  openDialog('小莲宝', '切换演示档案', Object.entries(PROFILES).map(([k, p]) => `
+  openDialog('小骨宝', '切换演示档案', Object.entries(PROFILES).map(([k, p]) => `
     <button class="profile-row ${state.profile === k ? 'on' : ''}" data-pick-profile="${k}">
       <div><b>${esc(p.name)}的资料</b><p>${esc(p.meta)} · ${esc(p.headline)}</p></div><span class="profile-caret">${state.profile === k ? '当前' : '切换'}</span></button>`).join(''),
     '<button data-action="close">取消</button>');
@@ -1166,7 +1039,7 @@ function loadMineruStatus() {
   if (!el) return;
   /* 原型里没有 DATA_SOURCE（那份是纯离线演示），用 typeof 兜住，两版共用同一段代码 */
   if (typeof DATA_SOURCE === 'undefined' || DATA_SOURCE !== 'api') { el.textContent = '离线演示：未连接工作台，读不到 Token 状态。'; return; }
-  fetch(`${apiBase()}/api/cervical/settings/mineru`, { headers: { accept: 'application/json' } })
+  fetch(`${apiBase()}/api/bone/settings/mineru`, { headers: { accept: 'application/json' } })
     .then((r) => r.json().then((j) => { if (!r.ok) throw new Error(j.message || j.error || '读取失败'); return j; }))
     .then((s) => { const n = $('#mineru-status'); if (n) n.textContent = mineruStatusText(s); })
     .catch((e) => { const n = $('#mineru-status'); if (n) n.textContent = `读取 Token 状态失败：${e.message}`; });
@@ -1174,7 +1047,7 @@ function loadMineruStatus() {
 function mineruPost(payload) {
   const el = $('#mineru-status');
   if (typeof DATA_SOURCE === 'undefined' || DATA_SOURCE !== 'api') { toast('离线演示不能保存 Token'); return; }
-  fetch(`${apiBase()}/api/cervical/settings/mineru`, {
+  fetch(`${apiBase()}/api/bone/settings/mineru`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
   })
     .then((r) => r.json().then((j) => { if (!r.ok) throw new Error(j.message || j.error || '保存失败'); return j; }))
@@ -1189,39 +1062,39 @@ function mineruPost(payload) {
     });
 }
 function dlgSettings() {
-  openDialog('小莲宝', '设置', `<div class="cfg-tabs" role="tablist">
+  openDialog('小骨宝', '设置', `<div class="cfg-tabs" role="tablist">
   <button role="tab" aria-selected="true" data-action="cfg-tab" data-tab="ws">资料目录</button><button role="tab" aria-selected="false" data-action="cfg-tab" data-tab="parse">文档解析</button><button role="tab" aria-selected="false" data-action="cfg-tab" data-tab="kb">临床数据库</button></div>
-  <div class="cfg-block" style="margin-top:16px" data-tab="ws"><h3>工作区资料目录</h3><div class="path-row"><code>~/Documents/CerviPalWorkspace（演示值）</code><button class="soft">选择…</button></div>
+  <div class="cfg-block" style="margin-top:16px" data-tab="ws"><h3>工作区资料目录</h3><div class="path-row"><code>~/Documents/OsteoPalWorkspace（演示值）</code><button class="soft">选择…</button></div>
   <p class="small-note">患者数据只存入你明确选择的目录；工作台不把资料上传云端。</p></div>
   <div class="cfg-block" style="margin-top:12px" data-tab="parse" hidden><h3>文档解析（MinerU）</h3>
   <div class="token-row"><input id="mineru-token" type="password" autocomplete="new-password" placeholder="粘贴 MinerU API Token（sk-…）" aria-label="MinerU API Token"><button class="primary" data-action="mineru-save">保存</button><button class="soft" data-action="mineru-clear">清除</button></div>
   <p class="small-note" id="mineru-status" role="status">正在读取本机 Token 状态…</p>
   <p class="small-note">Token 只写进本机密钥文件（权限 600），只用于向 MinerU 发起解析请求，不进患者资料、不进导出、不进提示词。没有 Token 可以到 <a href="https://mineru.net/apiManage/token" target="_blank" rel="noopener">MinerU 申请页 ↗</a> 领取；解析结果永远是候选，核对后才入档。</p></div>
-  <div class="cfg-block" style="margin-top:12px" data-tab="kb" hidden><h3>2026 临床数据库</h3><div class="path-row"><code>cervical_cancer_trials_2026.sqlite · 158 条登记（演示摘录 14 条）</code></div>
+  <div class="cfg-block" style="margin-top:12px" data-tab="kb" hidden><h3>2026 临床数据库</h3><div class="path-row"><code>bone_cancer_trials_2026.sqlite · 6 条登记（演示摘录 6 条；中国骨肉瘤登记全量 87 项按 M4 采集）</code></div>
   <p class="small-note">离线快照来自 CT.gov 在线通道；ChiCTR / 药物临床试验登记平台本轮未采集，覆盖未知。</p></div>`, '<button class="primary" data-action="close">完成</button>');
 }
 function dlgAbout() {
-  openDialog('小莲宝', '关于', `<div class="about"><div class="brand no-mark" style="zoom:2.2"></div><div class="about-meta">
+  openDialog('小骨宝', '关于', `<div class="about"><div class="brand no-mark" style="zoom:2.2"></div><div class="about-meta">
     <div class="about-ver"><b>v${APP_INFO.version}</b>${pill(APP_INFO.channelLabel, 'violet')}</div>
     <dl><div><dt>构建</dt><dd>${APP_INFO.build}</dd></div><div><dt>形态</dt><dd>交互原型（单机多文件）· 全部患者数据为模拟</dd></div>
     <div><dt>数据</dt><dd>2026 临床试验：真实登记摘录（ClinicalTrials.gov），状态未核实</dd></div>
-    <div><dt>家族</dt><dd>小 X 宝家族 · CerviPal 小莲宝</dd></div></dl></div></div>`, '<button class="primary" data-action="close">关闭</button>');
+    <div><dt>家族</dt><dd>小 X 宝家族 · OsteoPal 小骨宝</dd></div></dl></div></div>`, '<button class="primary" data-action="close">关闭</button>');
 }
 function dlgHelp() {
-  openDialog('小莲宝', '原型操作说明', `<div class="cfg-block">顶栏「AI 对话」按钮打开右侧<b>原生会话挂载位</b>（可 × 隐藏、窄/标准/宽三档）。「整理本页要点」生成发送前可读的提示词；「模拟回复自检」演示文本层红线扫描。</div>
-  <div class="cfg-block" style="margin-top:12px">「检查与指标」「看板」里的数值卡<b>轻点翻面</b>看参考区间；分类记录（阴道狭窄、淋巴水肿、月经恢复）不翻面、不连线。「病情一图秀」左侧可勾选指标、按 3 / 6 个月或全部看。</div>
-  <div class="cfg-block" style="margin-top:12px">左上角头像可切换<b>两个演示档案</b>：何秀云（宫颈鳞癌 IIIC1r · 根治性放化疗 + 后装 + 免疫维持）、林晓桐（宫颈腺癌 IB2 · 根治性宫颈切除保留子宫 · 术后随访）。</div>
-  <div class="cfg-block" style="margin-top:12px"><b>私密内容</b>（性健康、扩张训练）默认折叠，需要本人点「本人确认，展开查看」；这些内容不进导出，也不进「与 Agent 讨论」的草稿。</div>`, '<button class="primary" data-action="close">知道了</button>');
+  openDialog('小骨宝', '原型操作说明', `<div class="cfg-block">顶栏「AI 对话」按钮打开右侧<b>原生会话挂载位</b>（可 × 隐藏、窄/标准/宽三档）。「整理本页要点」生成发送前可读的提示词；「模拟回复自检」演示文本层红线扫描。</div>
+  <div class="cfg-block" style="margin-top:12px">「检查与指标」「看板」里的数值卡<b>轻点翻面</b>看参考区间；分类记录（行走情况、疲劳自评）不翻面、不连线。「病情一图秀」左侧可勾选指标、按 3 / 6 个月或全部看。</div>
+  <div class="cfg-block" style="margin-top:12px">左上角头像可切换<b>两个演示档案</b>：林远（骨肉瘤左股骨远端 · 新辅助化疗第 1 周期 · 记录少）、韩志强（骨肉瘤右肱骨近端 · 保肢术后 2 年随访 · 记录多）。</div>
+  <div class="cfg-block" style="margin-top:12px"><b>私密内容</b>（感受记录）默认折叠，需要本人点「本人确认，展开查看」；这些内容不进导出，也不进「与 Agent 讨论」的草稿。</div>`, '<button class="primary" data-action="close">知道了</button>');
 }
 function dlgExport() {
   const p = P();
   const md = ['# 复诊准备（演示导出）', '', `档案：${p.name}（${p.meta}）`, '', '## 事实区（已核对）',
-    `- FIGO 2018 分期：${p.stage}（医生给出）`,
+    `- 外科分期：${p.stage}（医生给出）`,
     ...p.rhythm.map(r => `- ${r[0]}：${r[1]}（${r[2]}）`),
-    ...(p.lateEffects ? p.lateEffects.rows.slice(0, 3).map(r => `- ${r[0]} ${r[1]}：${r[2] || '未分级'}，${r[3]}`) : []),
+    ...(p.functSelf ? p.functSelf.rows.slice(0, 3).map(r => `- ${r[0]} 功能自评 ${r[1]}：${r[2]}（本人记录）`) : []),
     '', '## 想问的事 / 我的看法（不是医生结论）', '- （按页面勾选结果导出；私密条目默认不含）', '',
     '> 本文件由工作台整理，不构成医疗建议。'].join('\n');
-  openDialog('小莲宝', '导出编辑（Markdown）', `
+  openDialog('小骨宝', '导出编辑（Markdown）', `
     <textarea id="export-edit" aria-label="导出内容，可直接编辑" style="width:100%;min-height:320px;font:12px/1.7 ui-monospace,SFMono-Regular,monospace;padding:12px;border:1px solid #d8e0ea;border-radius:10px;background:#fff;color:#213139;resize:vertical">${esc(md)}</textarea>
     <p class="small-note">直接在上方编辑；「我的看法」区永远带"不是医生结论"标注。私密记录不会出现在这里。</p>`,
     '<button class="soft" data-action="close">取消</button><button class="primary" data-action="export-save">保存到资料目录</button>');
@@ -1298,22 +1171,20 @@ document.addEventListener('click', (e) => {
   const map = {
     profiles: dlgProfiles, settings: dlgSettings, about: dlgAbout, help: dlgHelp,
     close: closeDialog, 'open-store': () => toast('资料目录已激活（演示）'),
-    'go-review': () => { state.view = 'review'; state.privateOpen = false; location.hash = 'review'; render(); },
+    'go-imaging': () => { state.view = 'imaging'; state.privateOpen = false; location.hash = 'imaging'; render(); },
     'go-labs': () => { state.view = 'labs'; state.privateOpen = false; location.hash = 'labs'; render(); },
     'go-timeline': () => { state.view = 'timeline'; state.privateOpen = false; location.hash = 'timeline'; render(); },
     'go-stage': () => { state.view = 'stage'; state.privateOpen = false; location.hash = 'stage'; render(); },
-    'go-treatment': () => { state.view = 'treatment'; state.sub.treatment = 3; state.privateOpen = false; location.hash = 'treatment'; render(); },
+    'go-treatment': () => { state.view = 'treatment'; state.sub.treatment = 2; state.privateOpen = false; location.hash = 'treatment'; render(); },
     'go-trials': () => { state.view = 'trials'; state.privateOpen = false; location.hash = 'trials'; render(); },
     'go-records': () => { state.view = 'records'; state.privateOpen = false; location.hash = 'records'; render(); },
-    'go-nutrition': () => { state.view = 'nutrition'; state.privateOpen = false; location.hash = 'nutrition'; render(); },
-    'go-mind': () => { state.view = 'mind'; state.privateOpen = false; location.hash = 'mind'; render(); },
-    'go-late': () => { state.view = 'late'; state.privateOpen = false; location.hash = 'late'; render(); },
-    'go-fertility': () => { state.view = 'fertility'; state.privateOpen = false; location.hash = 'fertility'; render(); },
+    'go-function': () => { state.view = 'function'; state.sub.function = 2; state.privateOpen = false; location.hash = 'function'; render(); },
+    'go-function-priv': () => { state.view = 'function'; state.sub.function = 3; state.privateOpen = false; location.hash = 'function'; render(); },
     'toggle-private': () => { state.privateOpen = !state.privateOpen; render(); },
     source: (el) => {
       const d = el.dataset.doc ? DOCS[state.profile].find((x) => x.id === el.dataset.doc) : null;
       const line = d ? `${d.fileName || d.name}${d.size ? ` · ${fmtSize(d.size)}` : ''}（${d.date}）` : el.dataset.source || '原件存放在资料目录 imports/ 下';
-      openDialog('小莲宝', '原文出处', `<p style="font-size:12.5px">${esc(line)}</p><p class="small-note">工作区不改动原文，也不替你解释它。</p>`, '<button class="primary" data-action="close">关闭</button>');
+      openDialog('小骨宝', '原文出处', `<p style="font-size:12.5px">${esc(line)}</p><p class="small-note">工作区不改动原文，也不替你解释它。</p>`, '<button class="primary" data-action="close">关闭</button>');
     },
     'pick-file': () => { const inp = $('#file-picker'); if (inp && typeof inp.click === 'function') inp.click(); else toast('当前浏览器不支持选择本机文件'); },
     'mineru-save': () => {
@@ -1353,7 +1224,7 @@ document.addEventListener('click', (e) => {
     candidate: (el) => {
       const c = CANDS[state.profile].find((x) => x.id === el.dataset.id);
       if (!c) return;
-      openDialog('小莲宝', '核对这一项内容',
+      openDialog('小骨宝', '核对这一项内容',
         `<div class="notice">核对表示"转录已逐字检查过"，不等于医学审核。</div>
         <label style="display:block;margin-top:10px"><span class="form-label">${esc(c.name)}</span><input id="cand-input" style="width:100%" value="${esc(c.value)}" maxlength="160"></label>
         <p class="small-note">来源：${esc(c.source)}。暂时不确定就保留待核对状态，不会丢。</p>`,
@@ -1367,16 +1238,15 @@ document.addEventListener('click', (e) => {
     },
     'add-question': () => {
       const q = state.profile === 'A'
-        ? '请帮我核实：盆腔淋巴结的分期依据（r 还是 p），以及后装结束后阴道扩张要维持多久。'
-        : '请帮我核实：保留子宫后随访要做哪些项目、怀孕前需要先做哪些评估。';
+        ? '请帮我核实：新辅助化疗要做几个周期、什么时候评估手术方案。'
+        : '请帮我核实：下次随访要不要拍胸 CT、假体随访查什么。';
       state.questions = state.questions || [];
       if (!state.questions.includes(q)) state.questions.push(q);
       render(); toast('已加入复诊准备的问题清单');
     },
     'add-stage': () => toast('分期变更需抄医生给出的新分期与依据；旧分期保留'),
-    'add-late': () => toast('原型内不落库；真实版在这里记一条身体反应（日期 / 系统 / 医生原话）'),
-    'add-fertility': () => toast('月经情况按本人记录写，不换算成量表'),
-    'add-meal': () => toast('原型内不落库；真实版在这里记一笔进食（餐次 / 份量 / 症状）'),
+    'add-imaging': () => toast('原型内不落库；真实版在这里记一次影像检查（日期 / 模态 / 部位 / 报告摘录）'),
+    'add-function': () => toast('功能自评按本人记录写（日期 / 条目 / 情况），不换算成评分'),
     'add-viewpoint': () => toast('感受会记为"一条信息"，标注不是医生结论'),
     'export-nutrition': () => toast('就诊展示：最近 10 条进食记录 + 在用补充剂（演示）'),
     'export-review': dlgExport,
@@ -1447,3 +1317,106 @@ function ingestFiles(list) {
 const initialHash = location.hash.slice(1);
 if (VIEWS[initialHash]) state.view = initialHash;
 render();
+
+
+/* ---------------- 32 号整页视图（A1–A10；file:// 下单文件内联，不用 ES module） ----------------
+   历史栈：打开整页 = pushState 一条；页内下钻（L2/L3）是面板内层，Esc 在面板内一层层退，
+   退到 L1 再按 Esc / 返回 / 关闭 / 浏览器返回键都回到主页并收起整页。深链（#page=）直开不压栈。 */
+const PV_PAGES = {
+  pathology: {
+    title: '病理报告',
+    body: (p) => `<div class="card"><div class="card-head"><h2>${esc(p.pathology.title)}</h2>${pill(p.pathology.status, 'green')}</div>
+      <div class="rows">${p.pathology.rows.map(r => row(esc(r[0]), esc(r[1]))).join('')}</div></div>
+      <div class="card"><div class="card-head"><h2>缺口（还没确认的）</h2></div>
+      <div class="rows">${p.pathology.gaps.map(r => row(esc(r[0]), esc(r[1]))).join('')}</div></div>
+      <button class="pv-btn" data-pv-go="pathology-src">看报告原文 →</button>`,
+  },
+  'pathology-src': {
+    title: '报告原文',
+    parent: 'pathology',
+    body: (p) => `<div class="card"><div class="card-head"><h2>原件存放</h2></div>
+      <div class="rows">${row('档案', esc(P().biopsyNote || '未记录'))}${row('资料库', `「资料库」页可查原件状态；原件不改动，解析结果永远是候选`)}</div></div>
+      <div class="notice">工作台不替你解读病理报告；结论以报告原件与医生为准。</div>`,
+  },
+  labs: {
+    title: '化验记录',
+    body: () => `<div class="card"><div class="card-head"><h2>最近报告表</h2></div>
+      <div class="table-wrap"><table class="cycle-table"><thead><tr><th>指标</th><th>最近值</th><th>日期</th><th>来源</th></tr></thead><tbody>
+      ${Object.values(M()).map(m => { const l = m.points[m.points.length - 1]; return `<tr><td>${esc(m.name)}</td><td>${esc(String(l.v))}${m.unit ? ' ' + esc(m.unit) : ''}</td><td>${esc(l.d)}</td><td>${esc(l.src || '—')}</td></tr>`; }).join('')}
+      </tbody></table></div></div>
+      <div class="notice">「仅回顾，不解读」；解读归医生。</div>`,
+  },
+  chart: {
+    title: '病情一图秀（全屏）',
+    body: () => `<div class="card"><div class="card-head"><h2>当前勾选</h2></div>
+      <div class="rows">${state.sel.map(k => M()[k] ? row(esc(M()[k].name), esc(M()[k].note || '—')) : '').join('')}</div></div>
+      <div class="notice">曲线请在「病情一图秀」页操作；这里放不下交互画布，只做全屏摘要。</div>`,
+  },
+};
+const pv = { open: false, page: null, stack: [], deep: false, trigger: null };
+function pvRender() {
+  const conf = PV_PAGES[pv.page];
+  if (!conf) return;
+  $('.pv-title').textContent = conf.title;
+  $('.pv-crumb-slot').innerHTML = pv.stack.map(k =>
+    `<button class="pv-crumb" data-pv-pop="${esc(k)}">${esc(PV_PAGES[k].title)}</button>`).join('<span class="muted">›</span>');
+  $('.pv-body').innerHTML = conf.body(P());
+  $('#pv-panel').focus({ preventScroll: true });
+}
+function pvOpen(key, trigger) {
+  if (!PV_PAGES[key]) return;
+  pv.open = true; pv.page = key; pv.stack = []; pv.trigger = trigger || null;
+  pv.deep = false;
+  $('#pv-overlay').hidden = false;
+  document.documentElement.classList.add('pv-lock');
+  history.pushState({ pv: key }, '');
+  pvRender();
+}
+function pvOpenDeep(key) {
+  if (!PV_PAGES[key]) return;
+  pv.open = true; pv.page = key; pv.stack = []; pv.trigger = null; pv.deep = true;
+  $('#pv-overlay').hidden = false;
+  document.documentElement.classList.add('pv-lock');
+  pvRender();
+}
+function pvClose({ fromPop = false } = {}) {
+  if (!pv.open) return;
+  pv.open = false; pv.page = null; pv.stack = [];
+  $('#pv-overlay').hidden = true;
+  document.documentElement.classList.remove('pv-lock');
+  if (!fromPop && !pv.deep) history.back();
+  if (pv.trigger && document.contains(pv.trigger)) pv.trigger.focus({ preventScroll: true });
+  pv.trigger = null;
+}
+function pvPop() {  /* Esc / 返回：面板内一层层退（A2/P7 同口径） */
+  if (pv.stack.length) { pv.page = pv.stack.pop(); pvRender(); return; }
+  pvClose();
+}
+document.addEventListener('click', (e) => {
+  const openBtn = e.target.closest('[data-open]');
+  if (openBtn) { e.preventDefault(); pvOpen(openBtn.dataset.open, openBtn); return; }
+  const goBtn = e.target.closest('[data-pv-go]');
+  if (goBtn) { e.preventDefault(); pv.stack.push(pv.page); pv.page = goBtn.dataset.pvGo; pvRender(); return; }
+  const popBtn = e.target.closest('[data-pv-pop]');
+  if (popBtn) {
+    const idx = pv.stack.indexOf(popBtn.dataset.pvPop);
+    if (idx >= 0) { pv.stack = pv.stack.slice(0, idx); pv.page = popBtn.dataset.pvPop; pvRender(); }
+    return;
+  }
+  const act = e.target.closest('[data-pv-action]')?.dataset.pvAction;
+  if (act === 'close') pvClose();
+  if (act === 'back') pvPop();
+});
+window.addEventListener('popstate', (e) => {
+  if (!pv.open) return;
+  if (e.state && e.state.pv && PV_PAGES[e.state.pv]) { pv.page = e.state.pv; pv.stack = []; pvRender(); return; }
+  pvClose({ fromPop: true });
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && pv.open && !$('#dialog').open) { e.preventDefault(); pvPop(); }
+});
+/* 32 号深链：#page=xxx 直达整页视图（不压栈；返回键回主页）；必须在 PV_PAGES 定义之后执行 */
+{
+  const pvDeep = location.hash.match(/^#page=([a-z-]+)$/);
+  if (pvDeep && PV_PAGES[pvDeep[1]]) pvOpenDeep(pvDeep[1]);
+}

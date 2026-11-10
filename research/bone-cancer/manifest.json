@@ -1,0 +1,41 @@
+{
+  "topic": "bone-cancer",
+  "year": "2026",
+  "snapshotDate": "2026-11-11",
+  "tool": "unified-trial-mcp @ /Users/qinxiaoqiang/Downloads/unified_search_trials/dist/src/cli/main.js",
+  "queries": [
+    {
+      "keyword": "osteosarcoma",
+      "note": "英文标准名"
+    },
+    {
+      "keyword": "骨肉瘤",
+      "note": "中文标准名"
+    },
+    {
+      "keyword": "bone cancer",
+      "note": "宽检索上位词（去重靠登记号）"
+    },
+    {
+      "keyword": "Ewing sarcoma",
+      "note": "尤文肉瘤扩展检索"
+    }
+  ],
+  "perSourceLimit": 200,
+  "recordCount": 214,
+  "dbCount": 214,
+  "sourceStatusRows": 24,
+  "honesty": {
+    "offlineCorpora": "ChiCTR/CDE/CTV 离线语料仅胰腺癌覆盖；复发性心包炎只依赖在线通道终态，见 source_statuses 表",
+    "statusWording": "登记 ≠ 有效 ≠ 安全 ≠ 可入组；状态一律\"登记状态，未核实\"",
+    "mergeRule": "仅同一登记号（NCT/ChiCTR/CDE 等）合并，其余并排保留来源"
+  },
+  "files": {
+    "trials-2026.jsonl": {
+      "sha256": "7b9299a31aeaf656e20ff6aa8c0b2f3bd8d1cd3810252b549f5d4e6d784cd541"
+    },
+    "bone_cancer_trials_2026.sqlite": {
+      "sha256": "8297e7d5c36056e06fd2eb9a611ee6221a9ccd3f552ed525fa7104137b50c021"
+    }
+  }
+}
